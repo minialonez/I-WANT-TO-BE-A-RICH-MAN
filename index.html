@@ -153,6 +153,23 @@ body{background:linear-gradient(160deg,var(--bg),var(--bg2) 40%,#0f172a);color:v
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .empty{text-align:center;padding:60px;color:var(--text3)}
 .footer{text-align:center;margin-top:40px;font-size:11px;color:#334155}
+
+/* Admin */
+.admin-btn{padding:5px 14px;border-radius:8px;border:1px solid rgba(236,72,153,.3);background:transparent;color:#ec4899;cursor:pointer;font-size:12px;font-family:inherit}
+.admin-btn:hover{background:rgba(236,72,153,.08)}
+.usr-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);margin-bottom:8px;transition:all .2s}
+.usr-row:hover{background:rgba(255,255,255,.02)}
+.usr-avatar{width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.12);display:flex;align-items:center;justify-content:center;font-size:16px}
+.usr-info{flex:1}
+.usr-name{font-size:14px;font-weight:600}
+.usr-role{font-size:11px;padding:1px 8px;border-radius:4px;font-weight:600}
+.usr-admin{background:rgba(236,72,153,.15);color:#ec4899}
+.usr-user{background:rgba(148,163,184,.12);color:var(--text2)}
+.usr-actions{display:flex;gap:4px}
+.usr-actions button{padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:11px;font-family:inherit}
+.admin-add{background:rgba(99,102,241,.06);border-radius:14px;padding:16px;border:1px solid rgba(99,102,241,.15);margin-bottom:16px}
+.admin-add .fgrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+
 @media(max-width:600px){.sgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}.ar{padding:10px;gap:8px}.dca-summary{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -171,6 +188,7 @@ body{background:linear-gradient(160deg,var(--bg),var(--bg2) 40%,#0f172a);color:v
 <div id="app">
 <div class="ubar">
 <span style="flex:1;font-size:12px;color:var(--text3)" id="ug"></span>
+<button class="admin-btn" id="admin-btn" style="display:none" onclick="openAdminModal()">⚙️ จัดการ User</button>
 <button class="ubtn cy" id="btn-refresh" onclick="fetchPrices()">🔄 ราคาล่าสุด</button>
 <button class="ubtn" onclick="doLogout()">ออกจากระบบ</button>
 </div>
@@ -223,6 +241,13 @@ body{background:linear-gradient(160deg,var(--bg),var(--bg2) 40%,#0f172a);color:v
 <button class="bsave" onclick="submitYearlyUpdate()" style="width:100%">บันทึกมูลค่าใหม่</button>
 </div></div></div>
 
+<!-- Admin Modal -->
+<div id="admin-modal" class="mo" style="display:none"><div class="md" style="width:580px">
+<button class="mcl" onclick="closeAdminModal()">✕</button>
+<div class="mh"><h2>⚙️ จัดการผู้ใช้งาน</h2><p>เพิ่ม แก้ไข ลบ ผู้ใช้ · เฉพาะ Admin</p></div>
+<div class="mr" id="admin-content"></div>
+</div></div>
+
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbxYGTAsY13UPUaf4aCddumDOKdkUuVaO9m-8BEFP5u1BEEVSiyI68-TkBVW90CpPudC/exec';
 
@@ -235,7 +260,7 @@ const CATS={
   insurance:{l:'ประกันชีวิต+ลงทุน',i:'🛡️',c:'#ec4899'},
 };
 
-let user='',assets=[],LP={},AF='all',SB='growth_pct',PT=null;
+let user='',role='',assets=[],LP={},AF='all',SB='growth_pct',PT=null;
 let _sr=[],sTO=null,sType='all',sCtx=null,sTgt=null,dcaAssetId=null,updAssetId=null;
 
 const fmt=n=>n.toLocaleString('th-TH',{maximumFractionDigits:0});
@@ -250,17 +275,17 @@ const $L=document.getElementById('login-screen'),$A=document.getElementById('app
 const $U=document.getElementById('inp-user'),$P=document.getElementById('inp-pass');
 $U.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$P.focus();}});
 $P.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doLogin();}});
-(function(){const s=localStorage.getItem('richman_session');if(s){try{const d=JSON.parse(s);if(d.username){user=d.username;enter();}}catch(e){}}})();
+(function(){const s=localStorage.getItem('richman_session');if(s){try{const d=JSON.parse(s);if(d.username){user=d.username;role=d.role||'user';enter();}}catch(e){}}})();
 
 async function doLogin(){
   const u=$U.value.trim(),p=$P.value.trim(),b=document.getElementById('btn-login'),er=document.getElementById('login-error');
   if(!u||!p){er.textContent='กรุณากรอก Username และ Password';return;}
   b.disabled=true;b.textContent='กำลังเข้าสู่ระบบ...';er.textContent='';
   const r=await api({action:'login',username:u,password:p});
-  if(r.ok){user=r.username;if(document.getElementById('inp-remember').checked)localStorage.setItem('richman_session',JSON.stringify({username:user}));enter();}
+  if(r.ok){user=r.username;role=r.role||'user';if(document.getElementById('inp-remember').checked)localStorage.setItem('richman_session',JSON.stringify({username:user,role}));enter();}
   else{er.textContent=r.msg||'ไม่สำเร็จ';b.disabled=false;b.textContent='เข้าสู่ระบบ';}
 }
-function enter(){$L.classList.add('fade-out');setTimeout(()=>{$L.style.display='none';$A.style.display='block';document.getElementById('ug').textContent='👤 '+user;loadAssets();},800);}
+function enter(){$L.classList.add('fade-out');setTimeout(()=>{$L.style.display='none';$A.style.display='block';document.getElementById('ug').textContent='👤 '+user+(role==='admin'?' 🔑':'');if(role==='admin')document.getElementById('admin-btn').style.display='';loadAssets();},800);}
 function doLogout(){localStorage.removeItem('richman_session');location.reload();}
 
 // === DATA ===
@@ -513,6 +538,84 @@ async function editAsset(id){
   const r=await api({action:'updateAsset',username:user,id,cost:nc,units:nu});
   if(r.ok){a.cost=Number(nc);a.units=Number(nu);render();}else alert(r.msg);
 }
+// === ADMIN ===
+function openAdminModal(){document.getElementById('admin-modal').style.display='flex';renderAdmin();}
+function closeAdminModal(){document.getElementById('admin-modal').style.display='none';}
+document.getElementById('admin-modal').addEventListener('click',function(e){if(e.target===this)closeAdminModal();});
+
+async function renderAdmin(){
+  const c=document.getElementById('admin-content');
+  c.innerHTML='<div class="sl"><div class="spinner"></div></div>';
+  const r=await api({action:'getUsers',username:user});
+  if(!r.ok){c.innerHTML='<div class="se">'+r.msg+'</div>';return;}
+  const users=r.users||[];
+
+  c.innerHTML=`
+  <div class="admin-add">
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#a5b4fc">➕ สร้าง User ใหม่</div>
+    <div class="fgrid">
+      <input class="fi" id="nu-user" placeholder="Username">
+      <input class="fi" id="nu-pass" type="text" placeholder="Password">
+      <select class="fi" id="nu-role"><option value="user">👤 User</option><option value="admin">🔑 Admin</option></select>
+    </div>
+    <div class="factions"><button class="bsave" onclick="createUser()">สร้าง User</button></div>
+  </div>
+
+  <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px">👥 ผู้ใช้ทั้งหมด (${users.length})</div>
+  ${users.map(u=>`<div class="usr-row">
+    <div class="usr-avatar">${u.role==='admin'?'🔑':'👤'}</div>
+    <div class="usr-info">
+      <div class="usr-name">${u.username}</div>
+    </div>
+    <span class="usr-role ${u.role==='admin'?'usr-admin':'usr-user'}">${u.role==='admin'?'Admin':'User'}</span>
+    <div class="usr-actions">
+      <button onclick="editUser('${u.username}','${u.role}')" title="แก้ไข">✏️ แก้ไข</button>
+      ${u.username.toLowerCase()!==user.toLowerCase()?`<button onclick="deleteUser('${u.username}')" title="ลบ" style="color:var(--red)">🗑️</button>`:''}
+    </div>
+  </div>`).join('')}`;
+}
+
+async function createUser(){
+  const nu=document.getElementById('nu-user').value.trim();
+  const np=document.getElementById('nu-pass').value.trim();
+  const nr=document.getElementById('nu-role').value;
+  if(!nu||!np){alert('กรุณากรอก Username และ Password');return;}
+  const r=await api({action:'createUser',username:user,new_username:nu,new_password:np,new_role:nr});
+  if(r.ok){document.getElementById('nu-user').value='';document.getElementById('nu-pass').value='';alert(r.msg);await renderAdmin();}
+  else alert(r.msg);
+}
+
+async function editUser(target,currentRole){
+  const newUser=prompt('Username ใหม่ (เว้นว่างถ้าไม่เปลี่ยน):',target);
+  if(newUser===null)return;
+  const newPass=prompt('Password ใหม่ (เว้นว่างถ้าไม่เปลี่ยน):','');
+  if(newPass===null)return;
+  const newRole=prompt('Role (admin / user):',currentRole);
+  if(newRole===null)return;
+
+  const params={action:'updateUser',username:user,target_username:target};
+  if(newUser&&newUser!==target)params.new_username=newUser;
+  if(newPass)params.new_password=newPass;
+  if(newRole&&(newRole==='admin'||newRole==='user'))params.new_role=newRole;
+
+  const r=await api(params);
+  if(r.ok){alert(r.msg);
+    // If admin changed own username, update session
+    if(target.toLowerCase()===user.toLowerCase()&&newUser&&newUser!==target){
+      user=newUser.toLowerCase();
+      localStorage.setItem('richman_session',JSON.stringify({username:user,role}));
+      document.getElementById('ug').textContent='👤 '+user+(role==='admin'?' 🔑':'');
+    }
+    await renderAdmin();}
+  else alert(r.msg);
+}
+
+async function deleteUser(target){
+  if(!confirm('ลบ user "'+target+'"? (สินทรัพย์ของ user นี้จะยังอยู่ใน Sheet)'))return;
+  const r=await api({action:'deleteUser',username:user,target_username:target});
+  if(r.ok){alert(r.msg);await renderAdmin();}else alert(r.msg);
+}
+
 setInterval(()=>{if(user&&assets.some(a=>a.ticker))fetchPrices();},5*60*1000);
 </script>
 </body>
