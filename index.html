@@ -67,6 +67,10 @@ body{background:linear-gradient(160deg,var(--bg),var(--bg2) 40%,#0f172a);color:v
 .fi{width:100%;padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
 .fi:focus{border-color:var(--accent)}
 .fi::placeholder{color:var(--text3)}
+.fi option, select option{background:#1e293b;color:var(--text)}
+.csel option{background:#1e293b;color:var(--text)}
+select.fi,select.csel{background-color:#1e293b;color:var(--text)}
+select.fi option,select.csel option{background:#1e293b;color:var(--text);padding:8px}
 .tsb{display:flex;align-items:center;gap:6px;width:100%;padding:10px 14px;background:rgba(6,182,212,.08);border:1px dashed rgba(6,182,212,.3);border-radius:10px;color:var(--cyan);font-size:13px;font-family:inherit;cursor:pointer}
 .tsb:hover{background:rgba(6,182,212,.15)}
 .tsb.sel{background:rgba(16,185,129,.1)!important;border:1px solid rgba(16,185,129,.3)!important;color:var(--green)!important}
@@ -296,9 +300,27 @@ async function fetchPrices(){
   const r=await api({action:'getPrices',tickers:tks.join(',')});
   if(r.ok){LP=r.prices||{};PT=r.timestamp;}b.disabled=false;b.textContent='🔄 ราคาล่าสุด';render();
 }
-function cv(a){if(a.ticker&&LP[a.ticker]){const p=LP[a.ticker],pr=p.price_thb||p.price_raw||0;if(pr>0)return pr*(a.units||1);}return a.cost;}
-function isLive(a){return !!(a.ticker&&LP[a.ticker]);}
+function cv(a){
+  if(a.ticker&&LP[a.ticker]){
+    const p=LP[a.ticker];
+    // price_thb is already converted to THB for all currencies
+    const pr=p.price_thb||0;
+    if(pr>0)return pr*(a.units||1);
+  }
+  return a.cost;
+}
+function isLive(a){return !!(a.ticker&&LP[a.ticker]&&(LP[a.ticker].price_thb>0));}
 function isStale(a){if(a.ticker)return false;if(!a.lastUpdated)return true;const lu=new Date(a.lastUpdated),now=new Date();return(now-lu)>365*24*60*60*1000;}
+function unitInfo(a){
+  if(!a.ticker||!LP[a.ticker])return '';
+  const p=LP[a.ticker];
+  const cur=p.currency||'THB';
+  const up=p.unit_price||p.price_foreign||p.price_thb||0;
+  if(!up)return '';
+  let s=cur+' '+fmt2(up)+'/หน่วย';
+  if(cur!=='THB'&&p.fx_rate) s+=' (1 '+cur+' = ฿'+fmt2(p.fx_rate)+')';
+  return s;
+}
 
 // === SEARCH MODAL ===
 function openSearchModal(ctx,id){sCtx=ctx;sTgt=id||null;document.getElementById('search-modal').style.display='flex';const i=document.getElementById('search-input');i.value='';setTimeout(()=>i.focus(),100);document.getElementById('sresults').innerHTML='<div class="se">พิมพ์ชื่อสินทรัพย์เพื่อค้นหา</div>';setST('all');}
@@ -314,7 +336,7 @@ async function doSearch(q){
   _sr=r.results;const TI={crypto:'₿',stock:'📈',etf:'🔄',fund:'📊',gold:'🥇',index:'📉'};
   c.innerHTML=_sr.map((r,i)=>{const tl={crypto:'Crypto',stock:'Stock',etf:'ETF',fund:'Fund',gold:'Gold'}[r.type]||r.type;
     const ic=r.icon?`<img src="${r.icon}" onerror="this.parentElement.textContent='${TI[r.type]||'📦'}'">`:(TI[r.type]||'📦');
-    return `<div class="ri" onclick="selTicker(${i})"><div class="ric">${ic}</div><div class="rin"><div class="n">${r.name}</div><div class="d">${r.market||''} ${r.currency?'· '+r.currency:''} ${r.market_cap_rank?'· #'+r.market_cap_rank:''}</div></div><div class="rt">${r.ticker}</div><div class="rtype t-${r.type||'stock'}">${tl}</div></div>`;}).join('');
+    return `<div class="ri" onclick="selTicker(${i})"><div class="ric">${ic}</div><div class="rin"><div class="n">${r.name}</div><div class="d">${r.market||''} ${r.currency?'· '+r.currency:''} ${r.market_cap_rank?'· #'+r.market_cap_rank:''} ${r.unit_price?'· 💰 '+r.currency+' '+r.unit_price.toFixed(2):''}</div></div><div class="rt">${r.ticker}</div><div class="rtype t-${r.type||'stock'}">${tl}</div></div>`;}).join('');
 }
 
 async function selTicker(i){
@@ -341,90 +363,105 @@ async function renderDca(assetId){
   const txns=r.ok?r.transactions||[]:[];
   const a=assets.find(x=>x.id===assetId);
 
-  // Summary
-  let totalBuy=0,totalSell=0,totalUnitsBuy=0,totalUnitsSell=0,totalUsd=0;
-  txns.forEach(t=>{if(t.type==='buy'){totalBuy+=t.amount_thb;totalUnitsBuy+=t.units;totalUsd+=t.amount_usd;}else{totalSell+=t.amount_thb;totalUnitsSell+=t.units;}});
-  const netCost=totalBuy-totalSell;
-  const netUnits=totalUnitsBuy-totalUnitsSell;
+  let totalThb=0,totalUsd=0,totalUnits=0,totalFee=0,sellThb=0,sellUnits=0;
+  txns.forEach(t=>{
+    if(t.type==='buy'){totalThb+=t.amount_thb;totalUsd+=t.amount_usd;totalUnits+=t.units;totalFee+=(t.fee_usd||0);}
+    else{sellThb+=t.amount_thb;sellUnits+=t.units;}
+  });
+  const netCost=totalThb-sellThb;
+  const netUnits=totalUnits-sellUnits;
   const curVal=a?cv(a):0;
   const profit=curVal-netCost;
-  const avgCost=totalUnitsBuy>0?totalBuy/totalUnitsBuy:0;
-  const avgRate=txns.filter(t=>t.type==='buy'&&t.rate>0).length>0
-    ?txns.filter(t=>t.type==='buy'&&t.rate>0).reduce((s,t)=>s+t.rate,0)/txns.filter(t=>t.type==='buy'&&t.rate>0).length:0;
+  const avgCostThb=totalUnits>0?totalThb/totalUnits:0;
+  const avgCostUsd=totalUnits>0?totalUsd/totalUnits:0;
+  const avgRate=totalUsd>0?totalThb/(totalUsd+totalFee):0;
 
   c.innerHTML=`
   <div class="dca-summary">
-    <div class="dca-card"><div class="dl">เงินลงทุนรวม (ซื้อ)</div><div class="dv" style="color:var(--accent)">฿${fmt(totalBuy)}</div><div class="ds">${totalUsd>0?'≈ $'+fmt2(totalUsd):''}</div></div>
-    <div class="dca-card"><div class="dl">ถอน/ขายออก</div><div class="dv" style="color:var(--red)">฿${fmt(totalSell)}</div></div>
-    <div class="dca-card"><div class="dl">ต้นทุนสุทธิ</div><div class="dv">฿${fmt(netCost)}</div><div class="ds">ถัวเฉลี่ย ฿${fmt2(avgCost)}/หน่วย</div></div>
-    <div class="dca-card"><div class="dl">มูลค่าปัจจุบัน</div><div class="dv" style="color:var(--cyan)">฿${fmt(curVal)}</div><div class="ds">${netUnits>0?fmt2(netUnits)+' หน่วย':''}</div></div>
+    <div class="dca-card"><div class="dl">เงินลงทุนรวม (THB)</div><div class="dv" style="color:var(--accent)">฿${fmt(totalThb)}</div><div class="ds">≈ $${fmt2(totalUsd)}</div></div>
+    <div class="dca-card"><div class="dl">ค่าธรรมเนียมรวม</div><div class="dv" style="color:var(--orange)">$${fmt2(totalFee)}</div></div>
+    <div class="dca-card"><div class="dl">ถัวเฉลี่ยต่อหุ้น</div><div class="dv">$${fmt2(avgCostUsd)}</div><div class="ds">≈ ฿${fmt2(avgCostThb)}/หุ้น</div></div>
+    <div class="dca-card"><div class="dl">มูลค่าปัจจุบัน</div><div class="dv" style="color:var(--cyan)">฿${fmt(curVal)}</div><div class="ds">${netUnits>0?fmt2(netUnits)+' หุ้น':''}</div></div>
     <div class="dca-card"><div class="dl">กำไร/ขาดทุน</div><div class="dv" style="color:${profit>=0?'var(--green)':'var(--red)'}">฿${fB(profit)}</div><div class="ds">${netCost>0?fP((profit/netCost)*100):''}</div></div>
-    ${avgRate>0?`<div class="dca-card"><div class="dl">เรท THB/USD เฉลี่ย</div><div class="dv" style="color:var(--gold)">฿${fmt2(avgRate)}</div></div>`:''}
+    ${avgRate>0?`<div class="dca-card"><div class="dl">เรท THB/USD เฉลี่ย</div><div class="dv" style="color:var(--gold)">${fmt2(avgRate)}</div></div>`:''}
   </div>
 
-  ${profit>0?`<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:12px;padding:14px;margin-bottom:16px;font-size:12px;color:var(--green)">
-    💰 <strong>สรุปสำหรับการถอน:</strong> เงินต้นที่ลงทุน ฿${fmt(netCost)} · กำไร ฿${fmt(profit)} · ถ้าถอนทั้งหมด → เงินต้น ฿${fmt(netCost)} + กำไร ฿${fmt(profit)}
+  ${profit!==0?`<div style="background:${profit>=0?'rgba(16,185,129,.06)':'rgba(244,63,94,.06)'};border:1px solid ${profit>=0?'rgba(16,185,129,.15)':'rgba(244,63,94,.15)'};border-radius:12px;padding:14px;margin-bottom:16px;font-size:12px;color:${profit>=0?'var(--green)':'var(--red)'}">
+    💰 <strong>สรุปสำหรับการถอน:</strong> เงินต้น ฿${fmt(netCost)} (≈ $${fmt2(totalUsd)}) · ${profit>=0?'กำไร':'ขาดทุน'} ฿${fmt(Math.abs(profit))} · ค่าธรรมเนียมสะสม $${fmt2(totalFee)}
   </div>`:''}
 
   <div class="dca-add">
     <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#a5b4fc">➕ เพิ่มรายการ</div>
-    <div class="fgrid">
+    <div class="fgrid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">
       <select class="fi" id="txn-type"><option value="buy">🟢 ซื้อ (Buy)</option><option value="sell">🔴 ขาย (Sell)</option></select>
       <input class="fi" id="txn-date" type="date">
-      <input class="fi" id="txn-thb" type="number" placeholder="จำนวนเงิน (฿)">
-      <input class="fi" id="txn-units" type="number" placeholder="จำนวนหุ้น/หน่วย" step="any">
-      <div>
-        <input class="fi" id="txn-rate" type="number" placeholder="เรท THB/USD" step="any">
-        <div class="rate-auto" onclick="autoRate()">🔄 ดึงเรทปัจจุบันอัตโนมัติ</div>
-      </div>
-      <input class="fi" id="txn-note" placeholder="หมายเหตุ (ไม่บังคับ)">
+      <input class="fi" id="txn-thb" type="number" placeholder="จำนวนเงิน (฿)" oninput="calcDca()">
+      <input class="fi" id="txn-usd" type="number" placeholder="USD ที่ได้" step="any" oninput="calcDca()">
+      <input class="fi" id="txn-units" type="number" placeholder="จำนวนหุ้น" step="any" oninput="calcDca()">
+      <input class="fi" id="txn-fee" type="number" placeholder="ค่าธรรมเนียม (USD)" step="any" oninput="calcDca()">
+      <input class="fi" id="txn-note" placeholder="หมายเหตุ" style="grid-column:span 2">
     </div>
-    <div style="margin-top:8px;font-size:11px;color:var(--text3)" id="txn-usd-preview"></div>
+    <div id="txn-calc" style="margin-top:10px;font-size:12px;line-height:2;color:var(--text2);background:rgba(255,255,255,.02);border-radius:10px;padding:10px 14px;display:none"></div>
     <div class="factions"><button class="bsave" onclick="addTxn()">บันทึกรายการ</button></div>
   </div>
 
   <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px">📋 ประวัติทั้งหมด (${txns.length} รายการ)</div>
-  ${txns.length?txns.map(t=>`<div class="txn-row">
+  ${txns.length?txns.map(t=>{
+    const ppu=t.units>0&&t.amount_usd>0?(t.amount_usd/t.units):0;
+    return `<div class="txn-row" style="flex-wrap:wrap">
     <span class="txn-type ${t.type==='buy'?'txn-buy':'txn-sell'}">${t.type==='buy'?'ซื้อ':'ขาย'}</span>
     <span style="color:var(--text2);min-width:80px">${t.date}</span>
-    <span style="flex:1;font-weight:600">฿${fmt(t.amount_thb)}</span>
-    <span style="color:var(--text2)">${fmt2(t.units)} หน่วย</span>
-    ${t.rate>0?`<span style="color:var(--gold);font-size:11px">@${fmt2(t.rate)}</span>`:''}
-    ${t.amount_usd>0?`<span style="color:var(--cyan);font-size:11px">$${fmt2(t.amount_usd)}</span>`:''}
+    <span style="font-weight:600">฿${fmt(t.amount_thb)}</span>
+    <span style="color:var(--cyan)">$${fmt2(t.amount_usd)}</span>
+    <span style="color:var(--text2)">${fmt2(t.units)} หุ้น</span>
+    ${t.rate>0?`<span style="color:var(--gold);font-size:11px">เรท ${fmt2(t.rate)}</span>`:''}
+    ${ppu>0?`<span style="color:var(--accent);font-size:11px">$${fmt2(ppu)}/หุ้น</span>`:''}
+    ${t.fee_usd>0?`<span style="color:var(--orange);font-size:11px">Fee $${fmt2(t.fee_usd)}</span>`:''}
     ${t.note?`<span style="color:var(--text3);font-size:10px">${t.note}</span>`:''}
     <button class="txn-del" onclick="delTxn('${t.txn_id}')" title="ลบ">🗑️</button>
-  </div>`).join(''):'<div style="text-align:center;padding:20px;color:var(--text3)">ยังไม่มีรายการ</div>'}`;
+  </div>`}).join(''):'<div style="text-align:center;padding:20px;color:var(--text3)">ยังไม่มีรายการ</div>'}`;
 
-  // Setup date default & preview
   document.getElementById('txn-date').value=new Date().toISOString().slice(0,10);
-  document.getElementById('txn-thb').addEventListener('input',updateUsdPreview);
-  document.getElementById('txn-rate').addEventListener('input',updateUsdPreview);
 }
 
-function updateUsdPreview(){
+function calcDca(){
   const thb=Number(document.getElementById('txn-thb').value)||0;
-  const rate=Number(document.getElementById('txn-rate').value)||0;
-  const el=document.getElementById('txn-usd-preview');
-  if(thb>0&&rate>0){el.textContent=`💱 ≈ $${(thb/rate).toFixed(2)} USD (เรท ${fmt2(rate)} THB/USD)`;el.style.color='var(--cyan)';}
-  else el.textContent='';
-}
+  const usd=Number(document.getElementById('txn-usd').value)||0;
+  const units=Number(document.getElementById('txn-units').value)||0;
+  const fee=Number(document.getElementById('txn-fee').value)||0;
+  const el=document.getElementById('txn-calc');
 
-async function autoRate(){
-  const inp=document.getElementById('txn-rate');inp.value='...';
-  const r=await api({action:'getExchangeRate',from:'THB',to:'USD'});
-  if(r.ok&&r.rate){inp.value=r.rate.toFixed(4);updateUsdPreview();}
-  else{inp.value='';alert('ไม่สามารถดึงเรทได้');}
+  if(thb<=0&&usd<=0){el.style.display='none';return;}
+  el.style.display='block';
+  let lines=[];
+
+  if(thb>0&&usd>0){
+    const totalUsd=usd+fee;
+    const rate=thb/totalUsd;
+    lines.push(`💱 <strong>เรทแลกเปลี่ยน:</strong> <span style="color:var(--gold)">${fmt2(rate)} THB/USD</span> <span style="color:var(--text3)">(฿${fmt(thb)} ÷ $${fmt2(totalUsd)})</span>`);
+  }
+  if(fee>0){
+    lines.push(`💸 <strong>ค่าธรรมเนียม:</strong> <span style="color:var(--orange)">$${fmt2(fee)}</span>`);
+  }
+  if(usd>0&&units>0){
+    lines.push(`📊 <strong>ราคาต่อหุ้น:</strong> <span style="color:var(--accent)">$${fmt2(usd/units)}/หุ้น</span>`);
+  }
+  if(thb>0&&units>0){
+    lines.push(`📊 <strong>ต้นทุนต่อหุ้น (บาท):</strong> <span style="color:var(--accent)">฿${fmt2(thb/units)}/หุ้น</span>`);
+  }
+  el.innerHTML=lines.join('<br>');
 }
 
 async function addTxn(){
   const type=document.getElementById('txn-type').value;
   const date=document.getElementById('txn-date').value;
   const thb=document.getElementById('txn-thb').value;
+  const usd=document.getElementById('txn-usd').value;
   const units=document.getElementById('txn-units').value;
-  const rate=document.getElementById('txn-rate').value;
+  const fee=document.getElementById('txn-fee').value||'0';
   const note=document.getElementById('txn-note').value;
-  if(!thb||!units){alert('กรุณากรอกจำนวนเงินและจำนวนหุ้น');return;}
-  await api({action:'addTransaction',username:user,asset_id:dcaAssetId,type,date,amount_thb:thb,units,rate:rate||'0',note});
+  if(!thb||!units){alert('กรุณากรอกจำนวนเงินบาทและจำนวนหุ้น');return;}
+  await api({action:'addTransaction',username:user,asset_id:dcaAssetId,type,date,amount_thb:thb,amount_usd:usd||'0',units,fee_usd:fee,note});
   await renderDca(dcaAssetId);
 }
 async function delTxn(txnId){if(!confirm('ลบรายการนี้?'))return;await api({action:'deleteTransaction',username:user,txn_id:txnId});await renderDca(dcaAssetId);}
@@ -507,7 +544,7 @@ function rList(){
     return `<div class="ar">
       <div class="ai" style="background:${c.c}22">${c.i}</div>
       <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}</div><div class="ameta">${c.l} · ${a.date} · ${a.units} หน่วย${a.lastUpdated&&!a.ticker?' · อัปเดต: '+a.lastUpdated:''}</div></div>
-      <div class="apb"><div class="acur">฿${fmt(a._v)}</div><div class="acost">ต้นทุน ฿${fmt(a.cost)}</div>${li?`<div class="alive">🟢 ${li.source}${ch24}</div>`:''}</div>
+      <div class="apb"><div class="acur">฿${fmt(a._v)}</div><div class="acost">ต้นทุน ฿${fmt(a.cost)}</div>${li?`<div class="alive">🟢 ${li.source}${ch24}</div><div style="font-size:10px;color:var(--gold);margin-top:1px">${unitInfo(a)}</div>`:''}</div>
       <div class="agr"><div class="agb" style="color:${a._g>=0?'var(--green)':'var(--red)'}">${fB(a._g)} ฿</div><div class="agp" style="color:${a._g>=0?'var(--green)':'var(--red)'};background:${a._g>=0?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)'}">${fP(a._p)}</div></div>
       <div class="aact">
         <button class="dca-btn" onclick="openDcaModal('${a.id}')" title="บันทึก DCA / ดูประวัติ">📒</button>
