@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I WANT TO BE A RICH MAN</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a1a;--bg2:#111827;--bg3:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.06);--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--red:#f43f5e;--gold:#eab308;--cyan:#06b6d4;
+}
+body{background:linear-gradient(160deg,var(--bg) 0%,var(--bg2) 40%,#0f172a 100%);color:var(--text);font-family:'Noto Sans Thai','DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ─── Login ─── */
+#login-screen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#050510,#0e1225,#0a0a1a);transition:opacity 0.8s ease,transform 0.8s ease}
+#login-screen.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+.login-box{width:380px;max-width:90vw;padding:48px 36px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:24px;backdrop-filter:blur(20px);text-align:center}
+.login-box h1{font-family:'Space Mono',monospace;font-size:22px;background:linear-gradient(135deg,#a78bfa,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.login-box .sub{font-size:12px;color:var(--text3);margin-bottom:32px;letter-spacing:3px;text-transform:uppercase}
+.login-field{position:relative;margin-bottom:16px}
+.login-field input{width:100%;padding:14px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--text);font-size:15px;font-family:inherit;outline:none;transition:border 0.3s}
+.login-field input:focus{border-color:var(--accent)}
+.login-field input::placeholder{color:var(--text3)}
+.remember-row{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2)}
+.remember-row input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+.login-btn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;transition:transform 0.2s,box-shadow 0.3s}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(99,102,241,0.3)}
+.login-btn:disabled{opacity:0.5;cursor:wait}
+.login-error{color:var(--red);font-size:13px;margin-top:12px;min-height:20px}
+.login-diamond{font-size:48px;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(99,102,241,0.4));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* ─── Dashboard ─── */
+#app{display:none;padding:20px 16px;max-width:1200px;margin:0 auto;animation:fadeIn 0.6s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.header{text-align:center;margin-bottom:28px}
+.header .tag{font-size:12px;letter-spacing:5px;color:var(--accent);font-weight:700;text-transform:uppercase}
+.header h1{font-size:28px;font-family:'Space Mono',monospace;background:linear-gradient(135deg,#a78bfa,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .welcome{font-size:13px;color:var(--text3);margin-top:4px}
+.user-bar{display:flex;justify-content:flex-end;margin-bottom:4px}
+.logout-btn{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:12px;font-family:inherit}
+.logout-btn:hover{color:var(--red);border-color:var(--red)}
+
+/* Cards */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.card{background:var(--bg3);border-radius:16px;padding:20px 18px;border:1px solid var(--border);position:relative;overflow:hidden}
+.card .bar{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:16px 0 0 16px}
+.card .label{font-size:12px;color:var(--text2);margin-bottom:4px}
+.card .value{font-size:24px;font-weight:700;font-family:'DM Sans',sans-serif}
+.card .sub{font-size:13px;color:var(--text3);margin-top:2px}
+
+/* Allocation */
+.alloc-bar{display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px;margin-bottom:8px}
+.alloc-bar div{transition:flex 0.6s;min-width:3px;border-radius:99px}
+.alloc-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px}
+.alloc-legend span{display:flex;align-items:center;gap:5px}
+.alloc-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+/* Category Cards */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:20px}
+.cat-card{background:var(--bg3);border-radius:14px;padding:14px;border:1px solid var(--border);cursor:pointer;transition:all 0.3s}
+.cat-card:hover{border-color:rgba(255,255,255,0.15)}
+.cat-card.active{border-color:var(--hi);background:color-mix(in srgb,var(--hi) 10%,transparent)}
+.cat-card .icon{font-size:20px;margin-bottom:4px}
+.cat-card .cat-label{font-size:12px;color:var(--text2)}
+.cat-card .cat-value{font-size:15px;font-weight:700;font-family:'DM Sans'}
+.cat-card .cat-growth{font-size:12px;font-weight:600}
+
+/* Controls */
+.controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.pill{padding:6px 14px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.2s}
+.pill.on{border-color:var(--accent);background:rgba(99,102,241,0.1);color:#a5b4fc}
+.ctrl-select{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;font-family:inherit;outline:none;appearance:none;cursor:pointer}
+.add-btn{padding:6px 18px;border-radius:99px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
+.refresh-btn{padding:6px 14px;border-radius:99px;border:1px solid var(--cyan);background:transparent;color:var(--cyan);cursor:pointer;font-size:12px;font-family:inherit}
+.refresh-btn:disabled{opacity:0.4;cursor:wait}
+
+/* Add Form */
+.add-form{background:rgba(99,102,241,0.06);border-radius:16px;padding:20px;border:1px solid rgba(99,102,241,0.15);margin-bottom:16px;animation:fadeIn 0.3s}
+.add-form .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.add-form input,.add-form select{width:100%;padding:10px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
+.add-form input:focus,.add-form select:focus{border-color:var(--accent)}
+.add-form input::placeholder{color:var(--text3)}
+.form-actions{display:flex;gap:8px;margin-top:12px}
+.btn-save{padding:8px 24px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;font-family:inherit}
+.btn-cancel{padding:8px 24px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+
+/* Asset Row */
+.asset-row{background:var(--bg3);border-radius:14px;padding:14px 18px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;margin-bottom:8px;flex-wrap:wrap;transition:border 0.3s}
+.asset-row:hover{border-color:rgba(255,255,255,0.12)}
+.asset-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.asset-info{flex:1;min-width:120px}
+.asset-name{font-size:15px;font-weight:600}
+.asset-meta{font-size:11px;color:var(--text3)}
+.asset-price-box{text-align:right;min-width:130px}
+.asset-current{font-size:15px;font-weight:700;font-family:'DM Sans'}
+.asset-cost{font-size:12px;color:var(--text3)}
+.asset-live{font-size:10px;color:var(--cyan);margin-top:2px}
+.asset-growth{text-align:right;min-width:100px}
+.asset-growth-baht{font-size:14px;font-weight:700;font-family:'DM Sans'}
+.asset-growth-pct{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;display:inline-block}
+.asset-actions{display:flex;gap:4px}
+.asset-actions button{padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:12px}
+
+/* Price Status */
+.price-status{font-size:11px;color:var(--text3);text-align:right;margin-bottom:12px}
+.price-status .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty .emoji{font-size:40px;margin-bottom:12px}
+.footer{text-align:center;margin-top:40px;font-size:11px;color:#334155}
+
+/* Responsive */
+@media(max-width:600px){
+  .summary-grid{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .asset-row{padding:12px}
+  .controls{gap:6px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ LOGIN SCREEN ════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-diamond">💎</div>
+    <h1>I WANT TO BE A RICH MAN</h1>
+    <div class="sub">Portfolio Dashboard</div>
+    <div class="login-field">
+      <input type="text" id="inp-user" placeholder="Username" autocomplete="username" autofocus>
+    </div>
+    <div class="login-field">
+      <input type="password" id="inp-pass" placeholder="Password" autocomplete="current-password">
+    </div>
+    <label class="remember-row">
+      <input type="checkbox" id="inp-remember" checked> จดจำการเข้าสู่ระบบ
+    </label>
+    <button class="login-btn" id="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ════════════════ DASHBOARD ════════════════ -->
+<div id="app">
+  <div class="user-bar">
+    <span style="flex:1;font-size:12px;color:var(--text3)" id="user-greeting"></span>
+    <button class="refresh-btn" id="btn-refresh" onclick="fetchPrices()" title="อัปเดตราคา">🔄 ราคาล่าสุด</button>
+    <button class="logout-btn" onclick="doLogout()" style="margin-left:8px">ออกจากระบบ</button>
+  </div>
+
+  <div class="header">
+    <div class="tag">Portfolio Dashboard</div>
+    <h1>I WANT TO BE A RICH MAN</h1>
+    <div class="welcome">💎 ติดตามสินทรัพย์ทุกประเภท · ราคาเรียลไทม์ · บริหารความมั่งคั่ง</div>
+  </div>
+
+  <div class="price-status" id="price-status"></div>
+
+  <!-- Summary -->
+  <div class="summary-grid" id="summary-cards"></div>
+
+  <!-- Allocation -->
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:600">📊 สัดส่วนสินทรัพย์</div>
+    <div class="alloc-bar" id="alloc-bar"></div>
+    <div class="alloc-legend" id="alloc-legend"></div>
+  </div>
+
+  <!-- Category Cards -->
+  <div class="cat-grid" id="cat-grid"></div>
+
+  <!-- Controls -->
+  <div class="controls" id="controls"></div>
+
+  <!-- Add Form -->
+  <div class="add-form" id="add-form" style="display:none">
+    <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#a5b4fc">➕ เพิ่มสินทรัพย์ใหม่</div>
+    <div class="grid">
+      <input id="f-name" placeholder="ชื่อสินทรัพย์">
+      <select id="f-cat"></select>
+      <input id="f-cost" type="number" placeholder="ต้นทุนรวม (฿)">
+      <input id="f-units" type="number" placeholder="จำนวน/หน่วย" step="any">
+      <input id="f-date" type="date">
+      <input id="f-ticker" placeholder="Ticker (เช่น BTC, PTT, GOLD_TH)">
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px">💡 ใส่ Ticker เพื่อดึงราคาอัตโนมัติ: BTC, ETH, GOLD_TH, PTT.BK, CPALL.BK ฯลฯ</div>
+    <div class="form-actions">
+      <button class="btn-save" onclick="saveAsset()">บันทึก</button>
+      <button class="btn-cancel" onclick="toggleAddForm(false)">ยกเลิก</button>
+    </div>
+  </div>
+
+  <!-- Asset List -->
+  <div id="asset-list"></div>
+  <div class="footer">💎 I WANT TO BE A RICH MAN · Real-time pricing via CoinGecko, Yahoo Finance, Thai Gold API</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// CONFIG — ใส่ URL ของ Apps Script Web App ที่ deploy แล้ว
+// ════════════════════════════════════════════════════════════
+const API_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+// ─── Categories ───
+const CATS = {
+  fund:    { label:'กองทุน',   icon:'📊', color:'#6366f1' },
+  stock:   { label:'หุ้น',     icon:'📈', color:'#f43f5e' },
+  lottery: { label:'สลาก',     icon:'🎫', color:'#f59e0b' },
+  etf:     { label:'ETF',      icon:'🔄', color:'#06b6d4' },
+  gold:    { label:'ทองคำ',    icon:'🥇', color:'#eab308' },
+  house:   { label:'บ้าน',     icon:'🏠', color:'#10b981' },
+  land:    { label:'ที่ดิน',   icon:'🌍', color:'#8b5cf6' },
+  crypto:  { label:'คริปโต',   icon:'₿',  color:'#ff6b35' },
+  bond:    { label:'พันธบัตร', icon:'📜', color:'#64748b' },
+  cash:    { label:'เงินฝาก',  icon:'🏦', color:'#0ea5e9' },
+};
+
+// ─── State ───
+let currentUser = '';
+let assets = [];
+let livePrices = {};
+let activeFilter = 'all';
+let sortBy = 'growth_pct';
+let editingId = null;
+let priceTimestamp = null;
+
+// ─── Formatters ───
+const fmt = n => n.toLocaleString('th-TH', { maximumFractionDigits: 0 });
+const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+const fmtBaht = n => (n >= 0 ? '+' : '') + fmt(n);
+
+// ─── API Call ───
+async function api(params) {
+  const url = new URL(API_URL);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  try {
+    const r = await fetch(url.toString(), { redirect: 'follow' });
+    return await r.json();
+  } catch (e) {
+    console.error('API Error:', e);
+    return { ok: false, msg: 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้' };
+  }
+}
+
+// ════════════════ LOGIN ════════════════
+const $login  = document.getElementById('login-screen');
+const $app    = document.getElementById('app');
+const $user   = document.getElementById('inp-user');
+const $pass   = document.getElementById('inp-pass');
+const $rem    = document.getElementById('inp-remember');
+const $err    = document.getElementById('login-error');
+const $btnLog = document.getElementById('btn-login');
+
+// Enter on username → focus password
+$user.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); $pass.focus(); }
+});
+// Enter on password → login
+$pass.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); doLogin(); }
+});
+
+// Check remembered login
+(function checkRemembered() {
+  const saved = localStorage.getItem('richman_session');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      if (s.username) {
+        currentUser = s.username;
+        enterDashboard();
+      }
+    } catch (e) {}
+  }
+})();
+
+async function doLogin() {
+  const user = $user.value.trim();
+  const pass = $pass.value.trim();
+  if (!user || !pass) { $err.textContent = 'กรุณากรอก Username และ Password'; return; }
+
+  $btnLog.disabled = true;
+  $btnLog.textContent = 'กำลังเข้าสู่ระบบ...';
+  $err.textContent = '';
+
+  const res = await api({ action: 'login', username: user, password: pass });
+
+  if (res.ok) {
+    currentUser = res.username;
+    if ($rem.checked) {
+      localStorage.setItem('richman_session', JSON.stringify({ username: currentUser }));
+    }
+    enterDashboard();
+  } else {
+    $err.textContent = res.msg || 'เข้าสู่ระบบไม่สำเร็จ';
+    $btnLog.disabled = false;
+    $btnLog.textContent = 'เข้าสู่ระบบ';
+  }
+}
+
+function enterDashboard() {
+  // Fade out login
+  $login.classList.add('fade-out');
+  setTimeout(() => {
+    $login.style.display = 'none';
+    $app.style.display = 'block';
+    document.getElementById('user-greeting').textContent = '👤 ' + currentUser;
+    loadAssets();
+  }, 800);
+}
+
+function doLogout() {
+  localStorage.removeItem('richman_session');
+  location.reload();
+}
+
+// ════════════════ DATA ════════════════
+async function loadAssets() {
+  const res = await api({ action: 'getAssets', username: currentUser });
+  if (res.ok) {
+    assets = res.assets || [];
+    // Auto-fetch prices for assets with tickers
+    await fetchPrices();
+    render();
+  }
+}
+
+async function fetchPrices() {
+  const tickers = [...new Set(assets.map(a => a.ticker).filter(Boolean))];
+  if (!tickers.length) { render(); return; }
+
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังโหลด...';
+
+  const res = await api({ action: 'getPrices', tickers: tickers.join(',') });
+  if (res.ok) {
+    livePrices = res.prices || {};
+    priceTimestamp = res.timestamp;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔄 ราคาล่าสุด';
+  render();
+}
+
+function getCurrentValue(asset) {
+  // If asset has a ticker and we have live price, calculate
+  if (asset.ticker && livePrices[asset.ticker]) {
+    const p = livePrices[asset.ticker];
+    const price = p.price_thb || p.price_raw || 0;
+    if (price > 0) return price * (asset.units || 1);
+  }
+  // Fallback: cost (no growth) — user can manually update via edit
+  return asset.cost;
+}
+
+function isLive(asset) {
+  return !!(asset.ticker && livePrices[asset.ticker]);
+}
+
+// ════════════════ RENDER ════════════════
+function render() {
+  renderSummary();
+  renderAllocation();
+  renderCatGrid();
+  renderControls();
+  renderAssetList();
+  renderPriceStatus();
+}
+
+function renderPriceStatus() {
+  const el = document.getElementById('price-status');
+  if (priceTimestamp) {
+    const d = new Date(priceTimestamp);
+    el.innerHTML = '<span class="live-dot"></span>ราคาล่าสุด: ' + d.toLocaleString('th-TH');
+  } else {
+    el.textContent = '';
+  }
+}
+
+function renderSummary() {
+  const totalCost = assets.reduce((s, a) => s + a.cost, 0);
+  const totalCurrent = assets.reduce((s, a) => s + getCurrentValue(a), 0);
+  const growth = totalCurrent - totalCost;
+  const pct = totalCost ? (growth / totalCost) * 100 : 0;
+
+  document.getElementById('summary-cards').innerHTML = [
+    { label: 'มูลค่ารวม', value: '฿' + fmt(totalCurrent), sub: 'ต้นทุน ฿' + fmt(totalCost), color: 'var(--accent)' },
+    { label: 'กำไร/ขาดทุน', value: '฿' + fmtBaht(growth), sub: fmtPct(pct), color: growth >= 0 ? 'var(--green)' : 'var(--red)' },
+    { label: 'จำนวนสินทรัพย์', value: assets.length, sub: 'Live pricing: ' + Object.keys(livePrices).length + ' tickers', color: 'var(--cyan)' },
+  ].map(c => `
+    <div class="card">
+      <div class="bar" style="background:${c.color}"></div>
+      <div class="label">${c.label}</div>
+      <div class="value" style="color:${c.color}">${c.value}</div>
+      <div class="sub">${c.sub}</div>
+    </div>
+  `).join('');
+}
+
+function renderAllocation() {
+  const catData = {};
+  assets.forEach(a => {
+    if (!catData[a.cat]) catData[a.cat] = 0;
+    catData[a.cat] += getCurrentValue(a);
+  });
+  const total = Object.values(catData).reduce((s, v) => s + v, 0) || 1;
+  const sorted = Object.entries(catData).sort((a, b) => b[1] - a[1]);
+
+  document.getElementById('alloc-bar').innerHTML = sorted.map(([k, v]) =>
+    `<div style="flex:${v / total};background:${CATS[k]?.color || '#666'}" title="${CATS[k]?.label}: ฿${fmt(v)}"></div>`
+  ).join('');
+
+  document.getElementById('alloc-legend').innerHTML = sorted.map(([k, v]) =>
+    `<span><span class="alloc-dot" style="background:${CATS[k]?.color}"></span>
+     <span style="color:var(--text2)">${CATS[k]?.label}</span>
+     <strong style="color:var(--text)">${((v / total) * 100).toFixed(1)}%</strong></span>`
+  ).join('');
+}
+
+function renderCatGrid() {
+  const catData = {};
+  assets.forEach(a => {
+    if (!catData[a.cat]) catData[a.cat] = { cost: 0, current: 0 };
+    catData[a.cat].cost += a.cost;
+    catData[a.cat].current += getCurrentValue(a);
+  });
+
+  document.getElementById('cat-grid').innerHTML = Object.entries(catData)
+    .sort((a, b) => b[1].current - a[1].current)
+    .map(([k, v]) => {
+      const g = v.current - v.cost;
+      const p = v.cost ? (g / v.cost) * 100 : 0;
+      const isOn = activeFilter === k;
+      return `<div class="cat-card${isOn ? ' active' : ''}" style="--hi:${CATS[k]?.color}"
+        onclick="toggleFilter('${k}')">
+        <div class="icon">${CATS[k]?.icon || '📦'}</div>
+        <div class="cat-label">${CATS[k]?.label || k}</div>
+        <div class="cat-value">฿${fmt(v.current)}</div>
+        <div class="cat-growth" style="color:${g >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtPct(p)}</div>
+      </div>`;
+    }).join('');
+}
+
+function renderControls() {
+  const pills = [['all', 'ทั้งหมด'], ...Object.entries(CATS).map(([k, v]) => [k, v.icon + ' ' + v.label])];
+  document.getElementById('controls').innerHTML =
+    pills.map(([k, label]) =>
+      `<button class="pill${activeFilter === k ? ' on' : ''}" onclick="toggleFilter('${k}')">${label}</button>`
+    ).join('') +
+    '<span style="flex:1"></span>' +
+    `<select class="ctrl-select" onchange="sortBy=this.value;render()">
+      <option value="growth_pct"${sortBy === 'growth_pct' ? ' selected' : ''}>เรียงตาม % การเติบโต</option>
+      <option value="growth_baht"${sortBy === 'growth_baht' ? ' selected' : ''}>เรียงตาม ฿ กำไร</option>
+      <option value="value"${sortBy === 'value' ? ' selected' : ''}>เรียงตาม มูลค่า</option>
+    </select>` +
+    `<button class="add-btn" onclick="toggleAddForm(true)">+ เพิ่ม</button>`;
+}
+
+function renderAssetList() {
+  let list = activeFilter === 'all' ? [...assets] : assets.filter(a => a.cat === activeFilter);
+
+  list = list.map(a => ({ ...a, _cv: getCurrentValue(a), _live: isLive(a) }));
+  list.forEach(a => { a._growth = a._cv - a.cost; a._pct = a.cost ? (a._growth / a.cost) * 100 : 0; });
+
+  list.sort((a, b) => {
+    if (sortBy === 'growth_pct')  return b._pct - a._pct;
+    if (sortBy === 'growth_baht') return b._growth - a._growth;
+    return b._cv - a._cv;
+  });
+
+  if (!list.length) {
+    document.getElementById('asset-list').innerHTML = '<div class="empty"><div class="emoji">📭</div>ไม่พบสินทรัพย์ในหมวดนี้</div>';
+    return;
+  }
+
+  document.getElementById('asset-list').innerHTML = list.map(a => {
+    const c = CATS[a.cat] || { icon: '📦', color: '#666', label: a.cat };
+    const liveInfo = a._live ? livePrices[a.ticker] : null;
+    const liveLabel = liveInfo ? `🟢 ${liveInfo.source || 'Live'}` : '';
+    const change24 = liveInfo?.change_24h != null ? ` (24h: ${liveInfo.change_24h >= 0 ? '+' : ''}${liveInfo.change_24h.toFixed(2)}%)` : '';
+
+    return `<div class="asset-row">
+      <div class="asset-icon" style="background:${c.color}22">${c.icon}</div>
+      <div class="asset-info">
+        <div class="asset-name">${a.name}</div>
+        <div class="asset-meta">${c.label} · ${a.date} · ${a.units} หน่วย${a.ticker ? ' · 🏷️ ' + a.ticker : ''}</div>
+      </div>
+      <div class="asset-price-box">
+        <div class="asset-current">฿${fmt(a._cv)}</div>
+        <div class="asset-cost">ต้นทุน ฿${fmt(a.cost)}</div>
+        ${liveLabel ? `<div class="asset-live">${liveLabel}${change24}</div>` : ''}
+      </div>
+      <div class="asset-growth">
+        <div class="asset-growth-baht" style="color:${a._growth >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtBaht(a._growth)} ฿</div>
+        <div class="asset-growth-pct" style="color:${a._growth >= 0 ? 'var(--green)' : 'var(--red)'};background:${a._growth >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)'}">${fmtPct(a._pct)}</div>
+      </div>
+      <div class="asset-actions">
+        <button onclick="editAsset('${a.id}')">✏️</button>
+        <button onclick="deleteAsset('${a.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════ ACTIONS ════════════════
+function toggleFilter(cat) {
+  activeFilter = activeFilter === cat ? 'all' : cat;
+  render();
+}
+
+function toggleAddForm(show) {
+  document.getElementById('add-form').style.display = show ? 'block' : 'none';
+  if (show) {
+    // Populate category select
+    const sel = document.getElementById('f-cat');
+    if (!sel.options.length || sel.options.length <= 1) {
+      sel.innerHTML = Object.entries(CATS).map(([k, v]) =>
+        `<option value="${k}">${v.icon} ${v.label}</option>`
+      ).join('');
+    }
+    document.getElementById('f-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('f-name').focus();
+  }
+}
+
+async function saveAsset() {
+  const name = document.getElementById('f-name').value.trim();
+  const cat = document.getElementById('f-cat').value;
+  const cost = document.getElementById('f-cost').value;
+  const units = document.getElementById('f-units').value || '1';
+  const date = document.getElementById('f-date').value;
+  const ticker = document.getElementById('f-ticker').value.trim();
+
+  if (!name || !cost) { alert('กรุณากรอกชื่อและต้นทุน'); return; }
+
+  const res = await api({
+    action: 'addAsset', username: currentUser,
+    name, cat, cost, units, date, ticker
+  });
+
+  if (res.ok) {
+    // Clear form
+    ['f-name', 'f-cost', 'f-units', 'f-ticker'].forEach(id => document.getElementById(id).value = '');
+    toggleAddForm(false);
+    await loadAssets();
+  } else {
+    alert(res.msg || 'เพิ่มไม่สำเร็จ');
+  }
+}
+
+async function deleteAsset(id) {
+  if (!confirm('ต้องการลบสินทรัพย์นี้?')) return;
+  const res = await api({ action: 'deleteAsset', username: currentUser, id });
+  if (res.ok) { assets = assets.filter(a => a.id !== id); render(); }
+  else alert(res.msg || 'ลบไม่สำเร็จ');
+}
+
+async function editAsset(id) {
+  const asset = assets.find(a => a.id === id);
+  if (!asset) return;
+
+  const newCost = prompt('ต้นทุนรวม (฿):', asset.cost);
+  if (newCost === null) return;
+  const newUnits = prompt('จำนวน/หน่วย:', asset.units);
+  if (newUnits === null) return;
+  const newTicker = prompt('Ticker (เช่น BTC, PTT.BK, GOLD_TH):', asset.ticker || '');
+  if (newTicker === null) return;
+
+  const res = await api({
+    action: 'updateAsset', username: currentUser, id,
+    cost: newCost, units: newUnits, ticker: newTicker
+  });
+
+  if (res.ok) {
+    asset.cost = Number(newCost);
+    asset.units = Number(newUnits);
+    asset.ticker = newTicker;
+    await fetchPrices();
+  } else {
+    alert(res.msg || 'แก้ไขไม่สำเร็จ');
+  }
+}
+
+// Auto-refresh prices every 5 minutes
+setInterval(() => {
+  if (currentUser && assets.some(a => a.ticker)) fetchPrices();
+}, 5 * 60 * 1000);
+</script>
+</body>
+</html>
