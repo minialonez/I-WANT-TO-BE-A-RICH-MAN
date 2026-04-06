@@ -7,591 +7,513 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#0a0a1a;--bg2:#111827;--bg3:rgba(255,255,255,0.04);
-  --border:rgba(255,255,255,0.06);--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
-  --accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--red:#f43f5e;--gold:#eab308;--cyan:#06b6d4;
-}
-body{background:linear-gradient(160deg,var(--bg) 0%,var(--bg2) 40%,#0f172a 100%);color:var(--text);font-family:'Noto Sans Thai','DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+:root{--bg:#0a0a1a;--bg2:#111827;--bg3:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.06);--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--red:#f43f5e;--gold:#eab308;--cyan:#06b6d4;--orange:#f97316}
+body{background:linear-gradient(160deg,var(--bg),var(--bg2) 40%,#0f172a);color:var(--text);font-family:'Noto Sans Thai','DM Sans',sans-serif;min-height:100vh}
 
-/* ─── Login ─── */
-#login-screen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#050510,#0e1225,#0a0a1a);transition:opacity 0.8s ease,transform 0.8s ease}
+/* Login */
+#login-screen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#050510,#0e1225,#0a0a1a);transition:opacity .8s,transform .8s}
 #login-screen.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
-.login-box{width:380px;max-width:90vw;padding:48px 36px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:24px;backdrop-filter:blur(20px);text-align:center}
+.login-box{width:380px;max-width:90vw;padding:48px 36px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:24px;text-align:center}
 .login-box h1{font-family:'Space Mono',monospace;font-size:22px;background:linear-gradient(135deg,#a78bfa,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
 .login-box .sub{font-size:12px;color:var(--text3);margin-bottom:32px;letter-spacing:3px;text-transform:uppercase}
-.login-field{position:relative;margin-bottom:16px}
-.login-field input{width:100%;padding:14px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--text);font-size:15px;font-family:inherit;outline:none;transition:border 0.3s}
-.login-field input:focus{border-color:var(--accent)}
-.login-field input::placeholder{color:var(--text3)}
-.remember-row{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2)}
-.remember-row input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
-.login-btn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;transition:transform 0.2s,box-shadow 0.3s}
-.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(99,102,241,0.3)}
-.login-btn:disabled{opacity:0.5;cursor:wait}
-.login-error{color:var(--red);font-size:13px;margin-top:12px;min-height:20px}
-.login-diamond{font-size:48px;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(99,102,241,0.4));animation:float 3s ease-in-out infinite}
+.lf{margin-bottom:16px}
+.lf input{width:100%;padding:14px 18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:var(--text);font-size:15px;font-family:inherit;outline:none;transition:border .3s}
+.lf input:focus{border-color:var(--accent)}
+.lf input::placeholder{color:var(--text3)}
+.rem{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2)}
+.rem input{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+.lbtn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;transition:transform .2s,box-shadow .3s}
+.lbtn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(99,102,241,.3)}
+.lbtn:disabled{opacity:.5;cursor:wait}
+.lerr{color:var(--red);font-size:13px;margin-top:12px;min-height:20px}
+.ldiamond{font-size:48px;margin-bottom:16px;animation:float 3s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 
-/* ─── Dashboard ─── */
-#app{display:none;padding:20px 16px;max-width:1200px;margin:0 auto;animation:fadeIn 0.6s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.header{text-align:center;margin-bottom:28px}
-.header .tag{font-size:12px;letter-spacing:5px;color:var(--accent);font-weight:700;text-transform:uppercase}
-.header h1{font-size:28px;font-family:'Space Mono',monospace;background:linear-gradient(135deg,#a78bfa,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.header .welcome{font-size:13px;color:var(--text3);margin-top:4px}
-.user-bar{display:flex;justify-content:flex-end;margin-bottom:4px}
-.logout-btn{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:12px;font-family:inherit}
-.logout-btn:hover{color:var(--red);border-color:var(--red)}
+/* App */
+#app{display:none;padding:20px 16px;max-width:1200px;margin:0 auto;animation:fadeIn .6s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
+.hdr{text-align:center;margin-bottom:28px}
+.hdr .tag{font-size:12px;letter-spacing:5px;color:var(--accent);font-weight:700;text-transform:uppercase}
+.hdr h1{font-size:28px;font-family:'Space Mono',monospace;background:linear-gradient(135deg,#a78bfa,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ubar{display:flex;justify-content:flex-end;margin-bottom:4px;gap:8px;align-items:center}
+.ubtn{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:12px;font-family:inherit}
+.ubtn.cy{border-color:var(--cyan);color:var(--cyan)}
+.ubtn:disabled{opacity:.4;cursor:wait}
 
-/* Cards */
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
 .card{background:var(--bg3);border-radius:16px;padding:20px 18px;border:1px solid var(--border);position:relative;overflow:hidden}
 .card .bar{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:16px 0 0 16px}
-.card .label{font-size:12px;color:var(--text2);margin-bottom:4px}
-.card .value{font-size:24px;font-weight:700;font-family:'DM Sans',sans-serif}
-.card .sub{font-size:13px;color:var(--text3);margin-top:2px}
-
-/* Allocation */
-.alloc-bar{display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px;margin-bottom:8px}
-.alloc-bar div{transition:flex 0.6s;min-width:3px;border-radius:99px}
-.alloc-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px}
-.alloc-legend span{display:flex;align-items:center;gap:5px}
-.alloc-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
-
-/* Category Cards */
-.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:20px}
-.cat-card{background:var(--bg3);border-radius:14px;padding:14px;border:1px solid var(--border);cursor:pointer;transition:all 0.3s}
-.cat-card:hover{border-color:rgba(255,255,255,0.15)}
-.cat-card.active{border-color:var(--hi);background:color-mix(in srgb,var(--hi) 10%,transparent)}
-.cat-card .icon{font-size:20px;margin-bottom:4px}
-.cat-card .cat-label{font-size:12px;color:var(--text2)}
-.cat-card .cat-value{font-size:15px;font-weight:700;font-family:'DM Sans'}
-.cat-card .cat-growth{font-size:12px;font-weight:600}
-
-/* Controls */
-.controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.pill{padding:6px 14px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:12px;font-family:inherit;transition:all 0.2s}
-.pill.on{border-color:var(--accent);background:rgba(99,102,241,0.1);color:#a5b4fc}
-.ctrl-select{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;font-family:inherit;outline:none;appearance:none;cursor:pointer}
-.add-btn{padding:6px 18px;border-radius:99px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
-.refresh-btn{padding:6px 14px;border-radius:99px;border:1px solid var(--cyan);background:transparent;color:var(--cyan);cursor:pointer;font-size:12px;font-family:inherit}
-.refresh-btn:disabled{opacity:0.4;cursor:wait}
+.card .lb{font-size:12px;color:var(--text2);margin-bottom:4px}
+.card .vl{font-size:24px;font-weight:700;font-family:'DM Sans'}
+.card .sb{font-size:13px;color:var(--text3);margin-top:2px}
+.abar{display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px;margin-bottom:8px}
+.abar div{transition:flex .6s;min-width:3px;border-radius:99px}
+.aleg{display:flex;flex-wrap:wrap;gap:10px;font-size:12px}
+.aleg span{display:flex;align-items:center;gap:5px}
+.adot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:20px}
+.cc{background:var(--bg3);border-radius:14px;padding:14px;border:1px solid var(--border);cursor:pointer;transition:all .3s}
+.cc:hover{border-color:rgba(255,255,255,.15)}
+.cc.on{border-color:var(--hi);background:color-mix(in srgb,var(--hi) 10%,transparent)}
+.ctrls{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.pill{padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:11px;font-family:inherit;white-space:nowrap;transition:all .2s}
+.pill.on{border-color:var(--accent);background:rgba(99,102,241,.1);color:#a5b4fc}
+.csel{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;font-family:inherit;outline:none;cursor:pointer}
+.abtn{padding:6px 16px;border-radius:99px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
 
 /* Add Form */
-.add-form{background:rgba(99,102,241,0.06);border-radius:16px;padding:20px;border:1px solid rgba(99,102,241,0.15);margin-bottom:16px;animation:fadeIn 0.3s}
-.add-form .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.add-form input,.add-form select{width:100%;padding:10px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
-.add-form input:focus,.add-form select:focus{border-color:var(--accent)}
-.add-form input::placeholder{color:var(--text3)}
-.form-actions{display:flex;gap:8px;margin-top:12px}
-.btn-save{padding:8px 24px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;font-family:inherit}
-.btn-cancel{padding:8px 24px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.aform{background:rgba(99,102,241,.06);border-radius:16px;padding:20px;border:1px solid rgba(99,102,241,.15);margin-bottom:16px;animation:fadeIn .3s}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.fi{width:100%;padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
+.fi:focus{border-color:var(--accent)}
+.fi::placeholder{color:var(--text3)}
+.tsb{display:flex;align-items:center;gap:6px;width:100%;padding:10px 14px;background:rgba(6,182,212,.08);border:1px dashed rgba(6,182,212,.3);border-radius:10px;color:var(--cyan);font-size:13px;font-family:inherit;cursor:pointer}
+.tsb:hover{background:rgba(6,182,212,.15)}
+.tsb.sel{background:rgba(16,185,129,.1)!important;border:1px solid rgba(16,185,129,.3)!important;color:var(--green)!important}
+.factions{display:flex;gap:8px;margin-top:12px}
+.bsave{padding:8px 24px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-weight:600;font-family:inherit}
+.bcancel{padding:8px 24px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
 
 /* Asset Row */
-.asset-row{background:var(--bg3);border-radius:14px;padding:14px 18px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;margin-bottom:8px;flex-wrap:wrap;transition:border 0.3s}
-.asset-row:hover{border-color:rgba(255,255,255,0.12)}
-.asset-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.asset-info{flex:1;min-width:120px}
-.asset-name{font-size:15px;font-weight:600}
-.asset-meta{font-size:11px;color:var(--text3)}
-.asset-price-box{text-align:right;min-width:130px}
-.asset-current{font-size:15px;font-weight:700;font-family:'DM Sans'}
-.asset-cost{font-size:12px;color:var(--text3)}
-.asset-live{font-size:10px;color:var(--cyan);margin-top:2px}
-.asset-growth{text-align:right;min-width:100px}
-.asset-growth-baht{font-size:14px;font-weight:700;font-family:'DM Sans'}
-.asset-growth-pct{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;display:inline-block}
-.asset-actions{display:flex;gap:4px}
-.asset-actions button{padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:12px}
+.ar{background:var(--bg3);border-radius:14px;padding:14px 16px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;transition:border .3s}
+.ar:hover{border-color:rgba(255,255,255,.12)}
+.ai{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ainfo{flex:1;min-width:100px}
+.aname{font-size:14px;font-weight:600;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.ameta{font-size:11px;color:var(--text3);margin-top:2px}
+.tb{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;background:rgba(6,182,212,.1);color:var(--cyan);font-size:10px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s}
+.tb:hover{border-color:var(--cyan)}
+.tb.empty{opacity:.5;background:rgba(255,255,255,.04);color:var(--text3)}
+.stale-badge{display:inline-flex;align-items:center;gap:2px;padding:1px 6px;border-radius:4px;background:rgba(249,115,22,.12);color:var(--orange);font-size:10px;font-weight:600;cursor:pointer;margin-left:4px}
+.apb{text-align:right;min-width:120px}
+.acur{font-size:15px;font-weight:700;font-family:'DM Sans'}
+.acost{font-size:12px;color:var(--text3)}
+.alive{font-size:10px;color:var(--cyan);margin-top:2px}
+.agr{text-align:right;min-width:95px}
+.agb{font-size:14px;font-weight:700;font-family:'DM Sans'}
+.agp{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;display:inline-block}
+.aact{display:flex;gap:3px}
+.aact button{padding:4px 8px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:11px}
+.dca-btn{border-color:rgba(99,102,241,.3)!important;color:var(--accent)!important}
 
-/* Price Status */
-.price-status{font-size:11px;color:var(--text3);text-align:right;margin-bottom:12px}
-.price-status .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+/* Modal */
+.mo{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;animation:fadeIn .2s}
+.md{width:600px;max-width:96vw;max-height:90vh;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 25px 60px rgba(0,0,0,.5);position:relative}
+.mh{padding:20px 24px 0;flex-shrink:0}
+.mh h2{font-size:17px;font-weight:700;margin-bottom:4px}
+.mh p{font-size:12px;color:var(--text3);margin-bottom:14px}
+.ms{width:100%;padding:12px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:var(--text);font-size:15px;font-family:inherit;outline:none;margin-bottom:10px}
+.ms:focus{border-color:var(--accent)}
+.ms::placeholder{color:var(--text3)}
+.tpills{display:flex;gap:6px;padding:0 24px 14px;flex-wrap:wrap;flex-shrink:0}
+.tp{padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:11px;font-family:inherit}
+.tp.on{border-color:var(--accent);background:rgba(99,102,241,.15);color:#a5b4fc}
+.mr{flex:1;overflow-y:auto;padding:0 24px 20px}
+.mr::-webkit-scrollbar{width:4px}
+.mr::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px}
+.se{text-align:center;padding:40px;color:var(--text3);font-size:13px;line-height:2}
+.sl{text-align:center;padding:40px;color:var(--text2)}
+.spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ri{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:all .2s}
+.ri:hover{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.3)}
+.ric{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;overflow:hidden;background:rgba(255,255,255,.05)}
+.ric img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.rin{flex:1;min-width:0}
+.rin .n{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rin .d{font-size:11px;color:var(--text3)}
+.rt{font-size:14px;font-weight:700;color:var(--cyan);font-family:'DM Sans';flex-shrink:0}
+.rtype{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0}
+.t-crypto{background:rgba(255,107,53,.15);color:#ff6b35}
+.t-stock{background:rgba(244,63,94,.15);color:#f43f5e}
+.t-etf{background:rgba(6,182,212,.15);color:#06b6d4}
+.t-fund{background:rgba(99,102,241,.15);color:#6366f1}
+.t-gold{background:rgba(234,179,8,.15);color:#eab308}
+.mcl{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;padding:4px 8px;border-radius:8px;z-index:1}
+.mcl:hover{color:var(--text)}
 
-.empty{text-align:center;padding:60px 20px;color:var(--text3)}
-.empty .emoji{font-size:40px;margin-bottom:12px}
+/* DCA Modal */
+.dca-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.dca-card{background:rgba(255,255,255,.03);border-radius:12px;padding:14px;border:1px solid var(--border)}
+.dca-card .dl{font-size:11px;color:var(--text2);margin-bottom:2px}
+.dca-card .dv{font-size:16px;font-weight:700;font-family:'DM Sans'}
+.dca-card .ds{font-size:11px;color:var(--text3);margin-top:1px}
+.dca-add{background:rgba(99,102,241,.06);border-radius:14px;padding:16px;border:1px solid rgba(99,102,241,.15);margin-bottom:16px}
+.dca-add .fgrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+.txn-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;font-size:12px}
+.txn-row:hover{background:rgba(255,255,255,.02)}
+.txn-type{padding:2px 8px;border-radius:4px;font-weight:600;font-size:10px}
+.txn-buy{background:rgba(16,185,129,.12);color:var(--green)}
+.txn-sell{background:rgba(244,63,94,.12);color:var(--red)}
+.txn-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px 6px}
+.rate-auto{font-size:11px;color:var(--cyan);cursor:pointer;text-decoration:underline;margin-top:4px}
+
+.pstat{font-size:11px;color:var(--text3);text-align:right;margin-bottom:12px}
+.ldot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.empty{text-align:center;padding:60px;color:var(--text3)}
 .footer{text-align:center;margin-top:40px;font-size:11px;color:#334155}
-
-/* Responsive */
-@media(max-width:600px){
-  .summary-grid{grid-template-columns:1fr}
-  .cat-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
-  .asset-row{padding:12px}
-  .controls{gap:6px}
-}
+@media(max-width:600px){.sgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}.ar{padding:10px;gap:8px}.dca-summary{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<!-- ════════════════ LOGIN SCREEN ════════════════ -->
 <div id="login-screen">
-  <div class="login-box">
-    <div class="login-diamond">💎</div>
-    <h1>I WANT TO BE A RICH MAN</h1>
-    <div class="sub">Portfolio Dashboard</div>
-    <div class="login-field">
-      <input type="text" id="inp-user" placeholder="Username" autocomplete="username" autofocus>
-    </div>
-    <div class="login-field">
-      <input type="password" id="inp-pass" placeholder="Password" autocomplete="current-password">
-    </div>
-    <label class="remember-row">
-      <input type="checkbox" id="inp-remember" checked> จดจำการเข้าสู่ระบบ
-    </label>
-    <button class="login-btn" id="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
-    <div class="login-error" id="login-error"></div>
-  </div>
-</div>
+<div class="login-box">
+<div class="ldiamond">💎</div><h1>I WANT TO BE A RICH MAN</h1><div class="sub">Portfolio Dashboard</div>
+<div class="lf"><input type="text" id="inp-user" placeholder="Username" autocomplete="username" autofocus></div>
+<div class="lf"><input type="password" id="inp-pass" placeholder="Password" autocomplete="current-password"></div>
+<label class="rem"><input type="checkbox" id="inp-remember" checked> จดจำการเข้าสู่ระบบ</label>
+<button class="lbtn" id="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+<div class="lerr" id="login-error"></div>
+</div></div>
 
-<!-- ════════════════ DASHBOARD ════════════════ -->
 <div id="app">
-  <div class="user-bar">
-    <span style="flex:1;font-size:12px;color:var(--text3)" id="user-greeting"></span>
-    <button class="refresh-btn" id="btn-refresh" onclick="fetchPrices()" title="อัปเดตราคา">🔄 ราคาล่าสุด</button>
-    <button class="logout-btn" onclick="doLogout()" style="margin-left:8px">ออกจากระบบ</button>
-  </div>
-
-  <div class="header">
-    <div class="tag">Portfolio Dashboard</div>
-    <h1>I WANT TO BE A RICH MAN</h1>
-    <div class="welcome">💎 ติดตามสินทรัพย์ทุกประเภท · ราคาเรียลไทม์ · บริหารความมั่งคั่ง</div>
-  </div>
-
-  <div class="price-status" id="price-status"></div>
-
-  <!-- Summary -->
-  <div class="summary-grid" id="summary-cards"></div>
-
-  <!-- Allocation -->
-  <div class="card" style="margin-bottom:20px">
-    <div style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:600">📊 สัดส่วนสินทรัพย์</div>
-    <div class="alloc-bar" id="alloc-bar"></div>
-    <div class="alloc-legend" id="alloc-legend"></div>
-  </div>
-
-  <!-- Category Cards -->
-  <div class="cat-grid" id="cat-grid"></div>
-
-  <!-- Controls -->
-  <div class="controls" id="controls"></div>
-
-  <!-- Add Form -->
-  <div class="add-form" id="add-form" style="display:none">
-    <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#a5b4fc">➕ เพิ่มสินทรัพย์ใหม่</div>
-    <div class="grid">
-      <input id="f-name" placeholder="ชื่อสินทรัพย์">
-      <select id="f-cat"></select>
-      <input id="f-cost" type="number" placeholder="ต้นทุนรวม (฿)">
-      <input id="f-units" type="number" placeholder="จำนวน/หน่วย" step="any">
-      <input id="f-date" type="date">
-      <input id="f-ticker" placeholder="Ticker (เช่น BTC, PTT, GOLD_TH)">
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-top:6px">💡 ใส่ Ticker เพื่อดึงราคาอัตโนมัติ: BTC, ETH, GOLD_TH, PTT.BK, CPALL.BK ฯลฯ</div>
-    <div class="form-actions">
-      <button class="btn-save" onclick="saveAsset()">บันทึก</button>
-      <button class="btn-cancel" onclick="toggleAddForm(false)">ยกเลิก</button>
-    </div>
-  </div>
-
-  <!-- Asset List -->
-  <div id="asset-list"></div>
-  <div class="footer">💎 I WANT TO BE A RICH MAN · Real-time pricing via CoinGecko, Yahoo Finance, Thai Gold API</div>
+<div class="ubar">
+<span style="flex:1;font-size:12px;color:var(--text3)" id="ug"></span>
+<button class="ubtn cy" id="btn-refresh" onclick="fetchPrices()">🔄 ราคาล่าสุด</button>
+<button class="ubtn" onclick="doLogout()">ออกจากระบบ</button>
 </div>
+<div class="hdr"><div class="tag">Portfolio Dashboard</div><h1>I WANT TO BE A RICH MAN</h1>
+<div style="font-size:13px;color:var(--text3);margin-top:4px">💎 ติดตามสินทรัพย์ · ราคาเรียลไทม์ · บันทึก DCA · บริหารความมั่งคั่ง</div></div>
+<div class="pstat" id="pstat"></div>
+<div class="sgrid" id="scards"></div>
+<div class="card" style="margin-bottom:20px"><div style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:600">📊 สัดส่วนสินทรัพย์</div><div class="abar" id="abar"></div><div class="aleg" id="aleg"></div></div>
+<div class="cgrid" id="cgrid"></div>
+<div class="ctrls" id="ctrls"></div>
+<div class="aform" id="aform" style="display:none">
+<div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#a5b4fc">➕ เพิ่มสินทรัพย์ใหม่</div>
+<div class="fgrid">
+<input class="fi" id="f-name" placeholder="ชื่อสินทรัพย์"><select class="fi" id="f-cat"></select>
+<input class="fi" id="f-cost" type="number" placeholder="ต้นทุนรวม (฿)">
+<input class="fi" id="f-units" type="number" placeholder="จำนวน/หน่วย" step="any">
+<input class="fi" id="f-date" type="date">
+<button class="tsb" id="f-ticker-btn" onclick="openSearchModal('add')">🔍 ค้นหา Ticker</button>
+</div><input type="hidden" id="f-ticker">
+<div style="font-size:11px;color:var(--text3);margin-top:6px">💡 ผูก Ticker เพื่อดึงราคา real-time · สินทรัพย์ไม่มี Ticker จะแจ้งเตือนอัปเดตราคาทุกปี</div>
+<div class="factions"><button class="bsave" onclick="saveAsset()">บันทึก</button><button class="bcancel" onclick="toggleAddForm(false)">ยกเลิก</button></div>
+</div>
+<div id="alist"></div>
+<div class="footer">💎 I WANT TO BE A RICH MAN v2 · CoinGecko · Yahoo Finance · Thai Gold API</div>
+</div>
+
+<!-- Search Modal -->
+<div id="search-modal" class="mo" style="display:none"><div class="md">
+<button class="mcl" onclick="closeSearchModal()">✕</button>
+<div class="mh"><h2>🔍 ค้นหาสินทรัพย์</h2><p>CoinGecko (Crypto) · Yahoo Finance (หุ้น/ETF ทั่วโลก)</p>
+<input class="ms" id="search-input" placeholder="พิมพ์ เช่น bitcoin, PTT, VWRA, tesla, gold..." autocomplete="off"></div>
+<div class="tpills"><button class="tp on" data-type="all" onclick="setST('all')">ทั้งหมด</button><button class="tp" data-type="crypto" onclick="setST('crypto')">₿ Crypto</button><button class="tp" data-type="stock" onclick="setST('stock')">📈 หุ้น/ETF</button><button class="tp" data-type="gold" onclick="setST('gold')">🥇 ทองคำ</button></div>
+<div class="mr" id="sresults"><div class="se">พิมพ์ชื่อสินทรัพย์เพื่อค้นหา</div></div>
+</div></div>
+
+<!-- DCA/Transaction Modal -->
+<div id="dca-modal" class="mo" style="display:none"><div class="md" style="width:680px">
+<button class="mcl" onclick="closeDcaModal()">✕</button>
+<div class="mh"><h2 id="dca-title">📒 บันทึกการลงทุน</h2><p id="dca-subtitle"></p></div>
+<div class="mr" id="dca-content" style="padding:0 24px 24px"></div>
+</div></div>
+
+<!-- Yearly Update Modal -->
+<div id="update-modal" class="mo" style="display:none"><div class="md" style="width:440px">
+<button class="mcl" onclick="closeUpdateModal()">✕</button>
+<div class="mh"><h2>📅 อัปเดตมูลค่าประจำปี</h2><p id="upd-subtitle"></p></div>
+<div style="padding:0 24px 24px">
+<div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text2)">มูลค่าปัจจุบัน (฿)</label><input class="fi" id="upd-value" type="number" style="margin-top:4px"></div>
+<div style="margin-bottom:16px"><label style="font-size:12px;color:var(--text2)">หมายเหตุ</label><input class="fi" id="upd-note" placeholder="เช่น ประเมินราคาตลาด 2026" style="margin-top:4px"></div>
+<button class="bsave" onclick="submitYearlyUpdate()" style="width:100%">บันทึกมูลค่าใหม่</button>
+</div></div></div>
 
 <script>
-// ════════════════════════════════════════════════════════════
-// CONFIG — ใส่ URL ของ Apps Script Web App ที่ deploy แล้ว
-// ════════════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbxYGTAsY13UPUaf4aCddumDOKdkUuVaO9m-8BEFP5u1BEEVSiyI68-TkBVW90CpPudC/exec';
+const API_URL='YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
 
-// ─── Categories ───
-const CATS = {
-  fund:    { label:'กองทุน',   icon:'📊', color:'#6366f1' },
-  stock:   { label:'หุ้น',     icon:'📈', color:'#f43f5e' },
-  lottery: { label:'สลาก',     icon:'🎫', color:'#f59e0b' },
-  etf:     { label:'ETF',      icon:'🔄', color:'#06b6d4' },
-  gold:    { label:'ทองคำ',    icon:'🥇', color:'#eab308' },
-  house:   { label:'บ้าน',     icon:'🏠', color:'#10b981' },
-  land:    { label:'ที่ดิน',   icon:'🌍', color:'#8b5cf6' },
-  crypto:  { label:'คริปโต',   icon:'₿',  color:'#ff6b35' },
-  bond:    { label:'พันธบัตร', icon:'📜', color:'#64748b' },
-  cash:    { label:'เงินฝาก',  icon:'🏦', color:'#0ea5e9' },
+const CATS={
+  fund:{l:'กองทุน',i:'📊',c:'#6366f1'},stock:{l:'หุ้น',i:'📈',c:'#f43f5e'},
+  lottery:{l:'สลาก',i:'🎫',c:'#f59e0b'},etf:{l:'ETF',i:'🔄',c:'#06b6d4'},
+  gold:{l:'ทองคำ',i:'🥇',c:'#eab308'},house:{l:'บ้าน',i:'🏠',c:'#10b981'},
+  land:{l:'ที่ดิน',i:'🌍',c:'#8b5cf6'},crypto:{l:'คริปโต',i:'₿',c:'#ff6b35'},
+  bond:{l:'พันธบัตร',i:'📜',c:'#64748b'},cash:{l:'เงินฝาก',i:'🏦',c:'#0ea5e9'},
+  insurance:{l:'ประกันชีวิต+ลงทุน',i:'🛡️',c:'#ec4899'},
 };
 
-// ─── State ───
-let currentUser = '';
-let assets = [];
-let livePrices = {};
-let activeFilter = 'all';
-let sortBy = 'growth_pct';
-let editingId = null;
-let priceTimestamp = null;
+let user='',assets=[],LP={},AF='all',SB='growth_pct',PT=null;
+let _sr=[],sTO=null,sType='all',sCtx=null,sTgt=null,dcaAssetId=null,updAssetId=null;
 
-// ─── Formatters ───
-const fmt = n => n.toLocaleString('th-TH', { maximumFractionDigits: 0 });
-const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
-const fmtBaht = n => (n >= 0 ? '+' : '') + fmt(n);
+const fmt=n=>n.toLocaleString('th-TH',{maximumFractionDigits:0});
+const fmt2=n=>n.toLocaleString('th-TH',{maximumFractionDigits:2});
+const fP=n=>(n>=0?'+':'')+n.toFixed(2)+'%';
+const fB=n=>(n>=0?'+':'')+fmt(n);
 
-// ─── API Call ───
-async function api(params) {
-  const url = new URL(API_URL);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  try {
-    const r = await fetch(url.toString(), { redirect: 'follow' });
-    return await r.json();
-  } catch (e) {
-    console.error('API Error:', e);
-    return { ok: false, msg: 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้' };
-  }
+async function api(p){const u=new URL(API_URL);Object.entries(p).forEach(([k,v])=>u.searchParams.set(k,v));try{return await(await fetch(u,{redirect:'follow'})).json();}catch(e){return{ok:false,msg:'เชื่อมต่อไม่ได้'};}}
+
+// === LOGIN ===
+const $L=document.getElementById('login-screen'),$A=document.getElementById('app');
+const $U=document.getElementById('inp-user'),$P=document.getElementById('inp-pass');
+$U.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$P.focus();}});
+$P.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doLogin();}});
+(function(){const s=localStorage.getItem('richman_session');if(s){try{const d=JSON.parse(s);if(d.username){user=d.username;enter();}}catch(e){}}})();
+
+async function doLogin(){
+  const u=$U.value.trim(),p=$P.value.trim(),b=document.getElementById('btn-login'),er=document.getElementById('login-error');
+  if(!u||!p){er.textContent='กรุณากรอก Username และ Password';return;}
+  b.disabled=true;b.textContent='กำลังเข้าสู่ระบบ...';er.textContent='';
+  const r=await api({action:'login',username:u,password:p});
+  if(r.ok){user=r.username;if(document.getElementById('inp-remember').checked)localStorage.setItem('richman_session',JSON.stringify({username:user}));enter();}
+  else{er.textContent=r.msg||'ไม่สำเร็จ';b.disabled=false;b.textContent='เข้าสู่ระบบ';}
+}
+function enter(){$L.classList.add('fade-out');setTimeout(()=>{$L.style.display='none';$A.style.display='block';document.getElementById('ug').textContent='👤 '+user;loadAssets();},800);}
+function doLogout(){localStorage.removeItem('richman_session');location.reload();}
+
+// === DATA ===
+async function loadAssets(){const r=await api({action:'getAssets',username:user});if(r.ok){assets=r.assets||[];await fetchPrices();render();}}
+async function fetchPrices(){
+  const tks=[...new Set(assets.map(a=>a.ticker).filter(Boolean))];if(!tks.length){render();return;}
+  const b=document.getElementById('btn-refresh');b.disabled=true;b.textContent='⏳ โหลด...';
+  const r=await api({action:'getPrices',tickers:tks.join(',')});
+  if(r.ok){LP=r.prices||{};PT=r.timestamp;}b.disabled=false;b.textContent='🔄 ราคาล่าสุด';render();
+}
+function cv(a){if(a.ticker&&LP[a.ticker]){const p=LP[a.ticker],pr=p.price_thb||p.price_raw||0;if(pr>0)return pr*(a.units||1);}return a.cost;}
+function isLive(a){return !!(a.ticker&&LP[a.ticker]);}
+function isStale(a){if(a.ticker)return false;if(!a.lastUpdated)return true;const lu=new Date(a.lastUpdated),now=new Date();return(now-lu)>365*24*60*60*1000;}
+
+// === SEARCH MODAL ===
+function openSearchModal(ctx,id){sCtx=ctx;sTgt=id||null;document.getElementById('search-modal').style.display='flex';const i=document.getElementById('search-input');i.value='';setTimeout(()=>i.focus(),100);document.getElementById('sresults').innerHTML='<div class="se">พิมพ์ชื่อสินทรัพย์เพื่อค้นหา</div>';setST('all');}
+function closeSearchModal(){document.getElementById('search-modal').style.display='none';}
+document.getElementById('search-input').addEventListener('input',function(){clearTimeout(sTO);const q=this.value.trim();if(q.length<1){document.getElementById('sresults').innerHTML='<div class="se">พิมพ์ชื่อเพื่อค้นหา</div>';return;}document.getElementById('sresults').innerHTML='<div class="sl"><div class="spinner"></div><div>ค้นหา "'+q+'"...</div></div>';sTO=setTimeout(()=>doSearch(q),450);});
+document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Escape')closeSearchModal();});
+document.getElementById('search-modal').addEventListener('click',function(e){if(e.target===this)closeSearchModal();});
+function setST(t){sType=t;document.querySelectorAll('.tp').forEach(p=>p.classList.toggle('on',p.dataset.type===t));const q=document.getElementById('search-input').value.trim();if(q){clearTimeout(sTO);sTO=setTimeout(()=>doSearch(q),200);}}
+
+async function doSearch(q){
+  const r=await api({action:'searchTicker',q,type:sType});const c=document.getElementById('sresults');
+  if(!r.ok||!r.results?.length){c.innerHTML='<div class="se">ไม่พบ "'+q+'"</div>';return;}
+  _sr=r.results;const TI={crypto:'₿',stock:'📈',etf:'🔄',fund:'📊',gold:'🥇',index:'📉'};
+  c.innerHTML=_sr.map((r,i)=>{const tl={crypto:'Crypto',stock:'Stock',etf:'ETF',fund:'Fund',gold:'Gold'}[r.type]||r.type;
+    const ic=r.icon?`<img src="${r.icon}" onerror="this.parentElement.textContent='${TI[r.type]||'📦'}'">`:(TI[r.type]||'📦');
+    return `<div class="ri" onclick="selTicker(${i})"><div class="ric">${ic}</div><div class="rin"><div class="n">${r.name}</div><div class="d">${r.market||''} ${r.currency?'· '+r.currency:''} ${r.market_cap_rank?'· #'+r.market_cap_rank:''}</div></div><div class="rt">${r.ticker}</div><div class="rtype t-${r.type||'stock'}">${tl}</div></div>`;}).join('');
 }
 
-// ════════════════ LOGIN ════════════════
-const $login  = document.getElementById('login-screen');
-const $app    = document.getElementById('app');
-const $user   = document.getElementById('inp-user');
-const $pass   = document.getElementById('inp-pass');
-const $rem    = document.getElementById('inp-remember');
-const $err    = document.getElementById('login-error');
-const $btnLog = document.getElementById('btn-login');
-
-// Enter on username → focus password
-$user.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); $pass.focus(); }
-});
-// Enter on password → login
-$pass.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); doLogin(); }
-});
-
-// Check remembered login
-(function checkRemembered() {
-  const saved = localStorage.getItem('richman_session');
-  if (saved) {
-    try {
-      const s = JSON.parse(saved);
-      if (s.username) {
-        currentUser = s.username;
-        enterDashboard();
-      }
-    } catch (e) {}
-  }
-})();
-
-async function doLogin() {
-  const user = $user.value.trim();
-  const pass = $pass.value.trim();
-  if (!user || !pass) { $err.textContent = 'กรุณากรอก Username และ Password'; return; }
-
-  $btnLog.disabled = true;
-  $btnLog.textContent = 'กำลังเข้าสู่ระบบ...';
-  $err.textContent = '';
-
-  const res = await api({ action: 'login', username: user, password: pass });
-
-  if (res.ok) {
-    currentUser = res.username;
-    if ($rem.checked) {
-      localStorage.setItem('richman_session', JSON.stringify({ username: currentUser }));
-    }
-    enterDashboard();
-  } else {
-    $err.textContent = res.msg || 'เข้าสู่ระบบไม่สำเร็จ';
-    $btnLog.disabled = false;
-    $btnLog.textContent = 'เข้าสู่ระบบ';
-  }
+async function selTicker(i){
+  const r=_sr[i];if(!r)return;
+  if(sCtx==='add'){document.getElementById('f-ticker').value=r.ticker;const b=document.getElementById('f-ticker-btn');b.innerHTML='✅ <b>'+r.ticker+'</b> — '+r.name;b.classList.add('sel');const n=document.getElementById('f-name');if(!n.value)n.value=r.name;const cs=document.getElementById('f-cat');if(r.type&&CATS[r.type])cs.value=r.type;closeSearchModal();}
+  else if(sCtx==='swap'&&sTgt){const res=await api({action:'updateAsset',username:user,id:sTgt,ticker:r.ticker});if(res.ok){const a=assets.find(x=>x.id===sTgt);if(a)a.ticker=r.ticker;closeSearchModal();await fetchPrices();}else alert(res.msg);}
 }
 
-function enterDashboard() {
-  // Fade out login
-  $login.classList.add('fade-out');
-  setTimeout(() => {
-    $login.style.display = 'none';
-    $app.style.display = 'block';
-    document.getElementById('user-greeting').textContent = '👤 ' + currentUser;
-    loadAssets();
-  }, 800);
+// === DCA MODAL ===
+async function openDcaModal(assetId){
+  dcaAssetId=assetId;const a=assets.find(x=>x.id===assetId);if(!a)return;
+  document.getElementById('dca-modal').style.display='flex';
+  document.getElementById('dca-title').textContent='📒 '+a.name+' — บันทึกการลงทุน (DCA)';
+  document.getElementById('dca-subtitle').textContent='บันทึกทุกรายการซื้อ/ขาย เพื่อคำนวณต้นทุนและกำไรที่แม่นยำ';
+  await renderDca(assetId);
 }
+function closeDcaModal(){document.getElementById('dca-modal').style.display='none';dcaAssetId=null;loadAssets();}
+document.getElementById('dca-modal').addEventListener('click',function(e){if(e.target===this)closeDcaModal();});
 
-function doLogout() {
-  localStorage.removeItem('richman_session');
-  location.reload();
-}
+async function renderDca(assetId){
+  const c=document.getElementById('dca-content');
+  c.innerHTML='<div class="sl"><div class="spinner"></div></div>';
+  const r=await api({action:'getTransactions',username:user,asset_id:assetId});
+  const txns=r.ok?r.transactions||[]:[];
+  const a=assets.find(x=>x.id===assetId);
 
-// ════════════════ DATA ════════════════
-async function loadAssets() {
-  const res = await api({ action: 'getAssets', username: currentUser });
-  if (res.ok) {
-    assets = res.assets || [];
-    // Auto-fetch prices for assets with tickers
-    await fetchPrices();
-    render();
-  }
-}
+  // Summary
+  let totalBuy=0,totalSell=0,totalUnitsBuy=0,totalUnitsSell=0,totalUsd=0;
+  txns.forEach(t=>{if(t.type==='buy'){totalBuy+=t.amount_thb;totalUnitsBuy+=t.units;totalUsd+=t.amount_usd;}else{totalSell+=t.amount_thb;totalUnitsSell+=t.units;}});
+  const netCost=totalBuy-totalSell;
+  const netUnits=totalUnitsBuy-totalUnitsSell;
+  const curVal=a?cv(a):0;
+  const profit=curVal-netCost;
+  const avgCost=totalUnitsBuy>0?totalBuy/totalUnitsBuy:0;
+  const avgRate=txns.filter(t=>t.type==='buy'&&t.rate>0).length>0
+    ?txns.filter(t=>t.type==='buy'&&t.rate>0).reduce((s,t)=>s+t.rate,0)/txns.filter(t=>t.type==='buy'&&t.rate>0).length:0;
 
-async function fetchPrices() {
-  const tickers = [...new Set(assets.map(a => a.ticker).filter(Boolean))];
-  if (!tickers.length) { render(); return; }
+  c.innerHTML=`
+  <div class="dca-summary">
+    <div class="dca-card"><div class="dl">เงินลงทุนรวม (ซื้อ)</div><div class="dv" style="color:var(--accent)">฿${fmt(totalBuy)}</div><div class="ds">${totalUsd>0?'≈ $'+fmt2(totalUsd):''}</div></div>
+    <div class="dca-card"><div class="dl">ถอน/ขายออก</div><div class="dv" style="color:var(--red)">฿${fmt(totalSell)}</div></div>
+    <div class="dca-card"><div class="dl">ต้นทุนสุทธิ</div><div class="dv">฿${fmt(netCost)}</div><div class="ds">ถัวเฉลี่ย ฿${fmt2(avgCost)}/หน่วย</div></div>
+    <div class="dca-card"><div class="dl">มูลค่าปัจจุบัน</div><div class="dv" style="color:var(--cyan)">฿${fmt(curVal)}</div><div class="ds">${netUnits>0?fmt2(netUnits)+' หน่วย':''}</div></div>
+    <div class="dca-card"><div class="dl">กำไร/ขาดทุน</div><div class="dv" style="color:${profit>=0?'var(--green)':'var(--red)'}">฿${fB(profit)}</div><div class="ds">${netCost>0?fP((profit/netCost)*100):''}</div></div>
+    ${avgRate>0?`<div class="dca-card"><div class="dl">เรท THB/USD เฉลี่ย</div><div class="dv" style="color:var(--gold)">฿${fmt2(avgRate)}</div></div>`:''}
+  </div>
 
-  const btn = document.getElementById('btn-refresh');
-  btn.disabled = true;
-  btn.textContent = '⏳ กำลังโหลด...';
+  ${profit>0?`<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:12px;padding:14px;margin-bottom:16px;font-size:12px;color:var(--green)">
+    💰 <strong>สรุปสำหรับการถอน:</strong> เงินต้นที่ลงทุน ฿${fmt(netCost)} · กำไร ฿${fmt(profit)} · ถ้าถอนทั้งหมด → เงินต้น ฿${fmt(netCost)} + กำไร ฿${fmt(profit)}
+  </div>`:''}
 
-  const res = await api({ action: 'getPrices', tickers: tickers.join(',') });
-  if (res.ok) {
-    livePrices = res.prices || {};
-    priceTimestamp = res.timestamp;
-  }
-
-  btn.disabled = false;
-  btn.textContent = '🔄 ราคาล่าสุด';
-  render();
-}
-
-function getCurrentValue(asset) {
-  // If asset has a ticker and we have live price, calculate
-  if (asset.ticker && livePrices[asset.ticker]) {
-    const p = livePrices[asset.ticker];
-    const price = p.price_thb || p.price_raw || 0;
-    if (price > 0) return price * (asset.units || 1);
-  }
-  // Fallback: cost (no growth) — user can manually update via edit
-  return asset.cost;
-}
-
-function isLive(asset) {
-  return !!(asset.ticker && livePrices[asset.ticker]);
-}
-
-// ════════════════ RENDER ════════════════
-function render() {
-  renderSummary();
-  renderAllocation();
-  renderCatGrid();
-  renderControls();
-  renderAssetList();
-  renderPriceStatus();
-}
-
-function renderPriceStatus() {
-  const el = document.getElementById('price-status');
-  if (priceTimestamp) {
-    const d = new Date(priceTimestamp);
-    el.innerHTML = '<span class="live-dot"></span>ราคาล่าสุด: ' + d.toLocaleString('th-TH');
-  } else {
-    el.textContent = '';
-  }
-}
-
-function renderSummary() {
-  const totalCost = assets.reduce((s, a) => s + a.cost, 0);
-  const totalCurrent = assets.reduce((s, a) => s + getCurrentValue(a), 0);
-  const growth = totalCurrent - totalCost;
-  const pct = totalCost ? (growth / totalCost) * 100 : 0;
-
-  document.getElementById('summary-cards').innerHTML = [
-    { label: 'มูลค่ารวม', value: '฿' + fmt(totalCurrent), sub: 'ต้นทุน ฿' + fmt(totalCost), color: 'var(--accent)' },
-    { label: 'กำไร/ขาดทุน', value: '฿' + fmtBaht(growth), sub: fmtPct(pct), color: growth >= 0 ? 'var(--green)' : 'var(--red)' },
-    { label: 'จำนวนสินทรัพย์', value: assets.length, sub: 'Live pricing: ' + Object.keys(livePrices).length + ' tickers', color: 'var(--cyan)' },
-  ].map(c => `
-    <div class="card">
-      <div class="bar" style="background:${c.color}"></div>
-      <div class="label">${c.label}</div>
-      <div class="value" style="color:${c.color}">${c.value}</div>
-      <div class="sub">${c.sub}</div>
+  <div class="dca-add">
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#a5b4fc">➕ เพิ่มรายการ</div>
+    <div class="fgrid">
+      <select class="fi" id="txn-type"><option value="buy">🟢 ซื้อ (Buy)</option><option value="sell">🔴 ขาย (Sell)</option></select>
+      <input class="fi" id="txn-date" type="date">
+      <input class="fi" id="txn-thb" type="number" placeholder="จำนวนเงิน (฿)">
+      <input class="fi" id="txn-units" type="number" placeholder="จำนวนหุ้น/หน่วย" step="any">
+      <div>
+        <input class="fi" id="txn-rate" type="number" placeholder="เรท THB/USD" step="any">
+        <div class="rate-auto" onclick="autoRate()">🔄 ดึงเรทปัจจุบันอัตโนมัติ</div>
+      </div>
+      <input class="fi" id="txn-note" placeholder="หมายเหตุ (ไม่บังคับ)">
     </div>
-  `).join('');
+    <div style="margin-top:8px;font-size:11px;color:var(--text3)" id="txn-usd-preview"></div>
+    <div class="factions"><button class="bsave" onclick="addTxn()">บันทึกรายการ</button></div>
+  </div>
+
+  <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px">📋 ประวัติทั้งหมด (${txns.length} รายการ)</div>
+  ${txns.length?txns.map(t=>`<div class="txn-row">
+    <span class="txn-type ${t.type==='buy'?'txn-buy':'txn-sell'}">${t.type==='buy'?'ซื้อ':'ขาย'}</span>
+    <span style="color:var(--text2);min-width:80px">${t.date}</span>
+    <span style="flex:1;font-weight:600">฿${fmt(t.amount_thb)}</span>
+    <span style="color:var(--text2)">${fmt2(t.units)} หน่วย</span>
+    ${t.rate>0?`<span style="color:var(--gold);font-size:11px">@${fmt2(t.rate)}</span>`:''}
+    ${t.amount_usd>0?`<span style="color:var(--cyan);font-size:11px">$${fmt2(t.amount_usd)}</span>`:''}
+    ${t.note?`<span style="color:var(--text3);font-size:10px">${t.note}</span>`:''}
+    <button class="txn-del" onclick="delTxn('${t.txn_id}')" title="ลบ">🗑️</button>
+  </div>`).join(''):'<div style="text-align:center;padding:20px;color:var(--text3)">ยังไม่มีรายการ</div>'}`;
+
+  // Setup date default & preview
+  document.getElementById('txn-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('txn-thb').addEventListener('input',updateUsdPreview);
+  document.getElementById('txn-rate').addEventListener('input',updateUsdPreview);
 }
 
-function renderAllocation() {
-  const catData = {};
-  assets.forEach(a => {
-    if (!catData[a.cat]) catData[a.cat] = 0;
-    catData[a.cat] += getCurrentValue(a);
-  });
-  const total = Object.values(catData).reduce((s, v) => s + v, 0) || 1;
-  const sorted = Object.entries(catData).sort((a, b) => b[1] - a[1]);
-
-  document.getElementById('alloc-bar').innerHTML = sorted.map(([k, v]) =>
-    `<div style="flex:${v / total};background:${CATS[k]?.color || '#666'}" title="${CATS[k]?.label}: ฿${fmt(v)}"></div>`
-  ).join('');
-
-  document.getElementById('alloc-legend').innerHTML = sorted.map(([k, v]) =>
-    `<span><span class="alloc-dot" style="background:${CATS[k]?.color}"></span>
-     <span style="color:var(--text2)">${CATS[k]?.label}</span>
-     <strong style="color:var(--text)">${((v / total) * 100).toFixed(1)}%</strong></span>`
-  ).join('');
+function updateUsdPreview(){
+  const thb=Number(document.getElementById('txn-thb').value)||0;
+  const rate=Number(document.getElementById('txn-rate').value)||0;
+  const el=document.getElementById('txn-usd-preview');
+  if(thb>0&&rate>0){el.textContent=`💱 ≈ $${(thb/rate).toFixed(2)} USD (เรท ${fmt2(rate)} THB/USD)`;el.style.color='var(--cyan)';}
+  else el.textContent='';
 }
 
-function renderCatGrid() {
-  const catData = {};
-  assets.forEach(a => {
-    if (!catData[a.cat]) catData[a.cat] = { cost: 0, current: 0 };
-    catData[a.cat].cost += a.cost;
-    catData[a.cat].current += getCurrentValue(a);
-  });
-
-  document.getElementById('cat-grid').innerHTML = Object.entries(catData)
-    .sort((a, b) => b[1].current - a[1].current)
-    .map(([k, v]) => {
-      const g = v.current - v.cost;
-      const p = v.cost ? (g / v.cost) * 100 : 0;
-      const isOn = activeFilter === k;
-      return `<div class="cat-card${isOn ? ' active' : ''}" style="--hi:${CATS[k]?.color}"
-        onclick="toggleFilter('${k}')">
-        <div class="icon">${CATS[k]?.icon || '📦'}</div>
-        <div class="cat-label">${CATS[k]?.label || k}</div>
-        <div class="cat-value">฿${fmt(v.current)}</div>
-        <div class="cat-growth" style="color:${g >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtPct(p)}</div>
-      </div>`;
-    }).join('');
+async function autoRate(){
+  const inp=document.getElementById('txn-rate');inp.value='...';
+  const r=await api({action:'getExchangeRate',from:'THB',to:'USD'});
+  if(r.ok&&r.rate){inp.value=r.rate.toFixed(4);updateUsdPreview();}
+  else{inp.value='';alert('ไม่สามารถดึงเรทได้');}
 }
 
-function renderControls() {
-  const pills = [['all', 'ทั้งหมด'], ...Object.entries(CATS).map(([k, v]) => [k, v.icon + ' ' + v.label])];
-  document.getElementById('controls').innerHTML =
-    pills.map(([k, label]) =>
-      `<button class="pill${activeFilter === k ? ' on' : ''}" onclick="toggleFilter('${k}')">${label}</button>`
-    ).join('') +
-    '<span style="flex:1"></span>' +
-    `<select class="ctrl-select" onchange="sortBy=this.value;render()">
-      <option value="growth_pct"${sortBy === 'growth_pct' ? ' selected' : ''}>เรียงตาม % การเติบโต</option>
-      <option value="growth_baht"${sortBy === 'growth_baht' ? ' selected' : ''}>เรียงตาม ฿ กำไร</option>
-      <option value="value"${sortBy === 'value' ? ' selected' : ''}>เรียงตาม มูลค่า</option>
-    </select>` +
-    `<button class="add-btn" onclick="toggleAddForm(true)">+ เพิ่ม</button>`;
+async function addTxn(){
+  const type=document.getElementById('txn-type').value;
+  const date=document.getElementById('txn-date').value;
+  const thb=document.getElementById('txn-thb').value;
+  const units=document.getElementById('txn-units').value;
+  const rate=document.getElementById('txn-rate').value;
+  const note=document.getElementById('txn-note').value;
+  if(!thb||!units){alert('กรุณากรอกจำนวนเงินและจำนวนหุ้น');return;}
+  await api({action:'addTransaction',username:user,asset_id:dcaAssetId,type,date,amount_thb:thb,units,rate:rate||'0',note});
+  await renderDca(dcaAssetId);
+}
+async function delTxn(txnId){if(!confirm('ลบรายการนี้?'))return;await api({action:'deleteTransaction',username:user,txn_id:txnId});await renderDca(dcaAssetId);}
+
+// === YEARLY UPDATE MODAL ===
+function openUpdateModal(assetId){
+  updAssetId=assetId;const a=assets.find(x=>x.id===assetId);if(!a)return;
+  document.getElementById('update-modal').style.display='flex';
+  document.getElementById('upd-subtitle').textContent=a.name+' — อัปเดตล่าสุด: '+(a.lastUpdated||'ไม่เคย');
+  document.getElementById('upd-value').value=a.cost;
+  document.getElementById('upd-note').value='';
+}
+function closeUpdateModal(){document.getElementById('update-modal').style.display='none';updAssetId=null;}
+document.getElementById('update-modal').addEventListener('click',function(e){if(e.target===this)closeUpdateModal();});
+
+async function submitYearlyUpdate(){
+  const val=document.getElementById('upd-value').value;
+  if(!val){alert('กรุณากรอกมูลค่า');return;}
+  // We update cost to new value (for non-ticker assets, cost = current value)
+  await api({action:'updateAsset',username:user,id:updAssetId,cost:val});
+  closeUpdateModal();await loadAssets();
 }
 
-function renderAssetList() {
-  let list = activeFilter === 'all' ? [...assets] : assets.filter(a => a.cat === activeFilter);
+// === RENDER ===
+function render(){rSummary();rAlloc();rCatGrid();rControls();rList();rPstat();}
+function rPstat(){const e=document.getElementById('pstat');if(PT){const d=new Date(PT);e.innerHTML='<span class="ldot"></span>ราคาล่าสุด: '+d.toLocaleString('th-TH');}else e.textContent='';}
 
-  list = list.map(a => ({ ...a, _cv: getCurrentValue(a), _live: isLive(a) }));
-  list.forEach(a => { a._growth = a._cv - a.cost; a._pct = a.cost ? (a._growth / a.cost) * 100 : 0; });
+function rSummary(){
+  const tc=assets.reduce((s,a)=>s+a.cost,0),tv=assets.reduce((s,a)=>s+cv(a),0),g=tv-tc,p=tc?(g/tc)*100:0;
+  const staleCount=assets.filter(isStale).length;
+  document.getElementById('scards').innerHTML=[
+    {l:'มูลค่ารวม',v:'฿'+fmt(tv),s:'ต้นทุน ฿'+fmt(tc),c:'var(--accent)'},
+    {l:'กำไร/ขาดทุน',v:'฿'+fB(g),s:fP(p),c:g>=0?'var(--green)':'var(--red)'},
+    {l:'สินทรัพย์',v:assets.length+' รายการ',s:'Live: '+Object.keys(LP).length+(staleCount?' · ⚠️ '+staleCount+' ต้องอัปเดต':''),c:'var(--cyan)'},
+  ].map(x=>`<div class="card"><div class="bar" style="background:${x.c}"></div><div class="lb">${x.l}</div><div class="vl" style="color:${x.c}">${x.v}</div><div class="sb">${x.s}</div></div>`).join('');
+}
 
-  list.sort((a, b) => {
-    if (sortBy === 'growth_pct')  return b._pct - a._pct;
-    if (sortBy === 'growth_baht') return b._growth - a._growth;
-    return b._cv - a._cv;
-  });
+function rAlloc(){
+  const cd={};assets.forEach(a=>{if(!cd[a.cat])cd[a.cat]=0;cd[a.cat]+=cv(a);});
+  const tot=Object.values(cd).reduce((s,v)=>s+v,0)||1;
+  const sorted=Object.entries(cd).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('abar').innerHTML=sorted.map(([k,v])=>`<div style="flex:${v/tot};background:${CATS[k]?.c||'#666'}"></div>`).join('');
+  document.getElementById('aleg').innerHTML=sorted.map(([k,v])=>`<span><span class="adot" style="background:${CATS[k]?.c}"></span><span style="color:var(--text2)">${CATS[k]?.l||k}</span><b>${((v/tot)*100).toFixed(1)}%</b></span>`).join('');
+}
 
-  if (!list.length) {
-    document.getElementById('asset-list').innerHTML = '<div class="empty"><div class="emoji">📭</div>ไม่พบสินทรัพย์ในหมวดนี้</div>';
-    return;
-  }
+function rCatGrid(){
+  const cd={};assets.forEach(a=>{if(!cd[a.cat])cd[a.cat]={cost:0,cur:0};cd[a.cat].cost+=a.cost;cd[a.cat].cur+=cv(a);});
+  document.getElementById('cgrid').innerHTML=Object.entries(cd).sort((a,b)=>b[1].cur-a[1].cur).map(([k,v])=>{
+    const g=v.cur-v.cost,p=v.cost?(g/v.cost)*100:0;
+    return `<div class="cc${AF===k?' on':''}" style="--hi:${CATS[k]?.c}" onclick="tF('${k}')">
+      <div style="font-size:18px;margin-bottom:2px">${CATS[k]?.i||'📦'}</div>
+      <div style="font-size:11px;color:var(--text2)">${CATS[k]?.l||k}</div>
+      <div style="font-size:14px;font-weight:700;font-family:'DM Sans'">฿${fmt(v.cur)}</div>
+      <div style="font-size:11px;font-weight:600;color:${g>=0?'var(--green)':'var(--red)'}">${fP(p)}</div></div>`;}).join('');
+}
 
-  document.getElementById('asset-list').innerHTML = list.map(a => {
-    const c = CATS[a.cat] || { icon: '📦', color: '#666', label: a.cat };
-    const liveInfo = a._live ? livePrices[a.ticker] : null;
-    const liveLabel = liveInfo ? `🟢 ${liveInfo.source || 'Live'}` : '';
-    const change24 = liveInfo?.change_24h != null ? ` (24h: ${liveInfo.change_24h >= 0 ? '+' : ''}${liveInfo.change_24h.toFixed(2)}%)` : '';
+function rControls(){
+  const pills=[['all','ทั้งหมด'],...Object.entries(CATS).map(([k,v])=>[k,v.i+' '+v.l])];
+  document.getElementById('ctrls').innerHTML=pills.map(([k,l])=>`<button class="pill${AF===k?' on':''}" onclick="tF('${k}')">${l}</button>`).join('')
+    +'<span style="flex:1"></span>'
+    +`<select class="csel" onchange="SB=this.value;render()"><option value="growth_pct"${SB==='growth_pct'?' selected':''}>% เติบโต</option><option value="growth_baht"${SB==='growth_baht'?' selected':''}>฿ กำไร</option><option value="value"${SB==='value'?' selected':''}>มูลค่า</option></select>`
+    +`<button class="abtn" onclick="toggleAddForm(true)">+ เพิ่ม</button>`;
+}
 
-    return `<div class="asset-row">
-      <div class="asset-icon" style="background:${c.color}22">${c.icon}</div>
-      <div class="asset-info">
-        <div class="asset-name">${a.name}</div>
-        <div class="asset-meta">${c.label} · ${a.date} · ${a.units} หน่วย${a.ticker ? ' · 🏷️ ' + a.ticker : ''}</div>
-      </div>
-      <div class="asset-price-box">
-        <div class="asset-current">฿${fmt(a._cv)}</div>
-        <div class="asset-cost">ต้นทุน ฿${fmt(a.cost)}</div>
-        ${liveLabel ? `<div class="asset-live">${liveLabel}${change24}</div>` : ''}
-      </div>
-      <div class="asset-growth">
-        <div class="asset-growth-baht" style="color:${a._growth >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtBaht(a._growth)} ฿</div>
-        <div class="asset-growth-pct" style="color:${a._growth >= 0 ? 'var(--green)' : 'var(--red)'};background:${a._growth >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)'}">${fmtPct(a._pct)}</div>
-      </div>
-      <div class="asset-actions">
-        <button onclick="editAsset('${a.id}')">✏️</button>
-        <button onclick="deleteAsset('${a.id}')">🗑️</button>
-      </div>
-    </div>`;
+function rList(){
+  let list=AF==='all'?[...assets]:assets.filter(a=>a.cat===AF);
+  list=list.map(a=>({...a,_v:cv(a),_l:isLive(a),_s:isStale(a)}));
+  list.forEach(a=>{a._g=a._v-a.cost;a._p=a.cost?(a._g/a.cost)*100:0;});
+  list.sort((a,b)=>{if(SB==='growth_pct')return b._p-a._p;if(SB==='growth_baht')return b._g-a._g;return b._v-a._v;});
+
+  if(!list.length){document.getElementById('alist').innerHTML='<div class="empty"><div style="font-size:40px;margin-bottom:12px">📭</div>ไม่พบสินทรัพย์</div>';return;}
+
+  document.getElementById('alist').innerHTML=list.map(a=>{
+    const c=CATS[a.cat]||{i:'📦',c:'#666',l:a.cat};
+    const li=a._l?LP[a.ticker]:null;
+    const ch24=li?.change_24h!=null?' (24h: '+(li.change_24h>=0?'+':'')+li.change_24h.toFixed(2)+'%)':'';
+    const badge=a.ticker?`<span class="tb" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">🏷️ ${a.ticker} ✎</span>`
+      :`<span class="tb empty" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">+ Ticker</span>`;
+    const staleBadge=a._s?`<span class="stale-badge" onclick="event.stopPropagation();openUpdateModal('${a.id}')">⚠️ อัปเดตราคา</span>`:'';
+    return `<div class="ar">
+      <div class="ai" style="background:${c.c}22">${c.i}</div>
+      <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}</div><div class="ameta">${c.l} · ${a.date} · ${a.units} หน่วย${a.lastUpdated&&!a.ticker?' · อัปเดต: '+a.lastUpdated:''}</div></div>
+      <div class="apb"><div class="acur">฿${fmt(a._v)}</div><div class="acost">ต้นทุน ฿${fmt(a.cost)}</div>${li?`<div class="alive">🟢 ${li.source}${ch24}</div>`:''}</div>
+      <div class="agr"><div class="agb" style="color:${a._g>=0?'var(--green)':'var(--red)'}">${fB(a._g)} ฿</div><div class="agp" style="color:${a._g>=0?'var(--green)':'var(--red)'};background:${a._g>=0?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)'}">${fP(a._p)}</div></div>
+      <div class="aact">
+        <button class="dca-btn" onclick="openDcaModal('${a.id}')" title="บันทึก DCA / ดูประวัติ">📒</button>
+        <button onclick="editAsset('${a.id}')" title="แก้ไข">✏️</button>
+        <button onclick="deleteAsset('${a.id}')" title="ลบ">🗑️</button>
+      </div></div>`;
   }).join('');
 }
 
-// ════════════════ ACTIONS ════════════════
-function toggleFilter(cat) {
-  activeFilter = activeFilter === cat ? 'all' : cat;
-  render();
+// === ACTIONS ===
+function tF(c){AF=AF===c?'all':c;render();}
+function toggleAddForm(s){document.getElementById('aform').style.display=s?'block':'none';if(s){const sel=document.getElementById('f-cat');if(!sel.options.length)sel.innerHTML=Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v.i} ${v.l}</option>`).join('');document.getElementById('f-date').value=new Date().toISOString().slice(0,10);document.getElementById('f-ticker').value='';const b=document.getElementById('f-ticker-btn');b.innerHTML='🔍 ค้นหา Ticker';b.classList.remove('sel');document.getElementById('f-name').focus();}}
+
+async function saveAsset(){
+  const name=document.getElementById('f-name').value.trim(),cat=document.getElementById('f-cat').value;
+  const cost=document.getElementById('f-cost').value,units=document.getElementById('f-units').value||'1';
+  const date=document.getElementById('f-date').value,ticker=document.getElementById('f-ticker').value;
+  if(!name||!cost){alert('กรุณากรอกชื่อและต้นทุน');return;}
+  const r=await api({action:'addAsset',username:user,name,cat,cost,units,date,ticker});
+  if(r.ok){['f-name','f-cost','f-units'].forEach(id=>document.getElementById(id).value='');toggleAddForm(false);await loadAssets();}
+  else alert(r.msg);
 }
-
-function toggleAddForm(show) {
-  document.getElementById('add-form').style.display = show ? 'block' : 'none';
-  if (show) {
-    // Populate category select
-    const sel = document.getElementById('f-cat');
-    if (!sel.options.length || sel.options.length <= 1) {
-      sel.innerHTML = Object.entries(CATS).map(([k, v]) =>
-        `<option value="${k}">${v.icon} ${v.label}</option>`
-      ).join('');
-    }
-    document.getElementById('f-date').value = new Date().toISOString().slice(0, 10);
-    document.getElementById('f-name').focus();
-  }
+async function deleteAsset(id){if(!confirm('ลบสินทรัพย์นี้? (รวมประวัติ DCA ทั้งหมด)'))return;await api({action:'deleteAsset',username:user,id});assets=assets.filter(a=>a.id!==id);render();}
+async function editAsset(id){
+  const a=assets.find(x=>x.id===id);if(!a)return;
+  const nc=prompt('ต้นทุนรวม (฿):',a.cost);if(nc===null)return;
+  const nu=prompt('จำนวน/หน่วย:',a.units);if(nu===null)return;
+  const r=await api({action:'updateAsset',username:user,id,cost:nc,units:nu});
+  if(r.ok){a.cost=Number(nc);a.units=Number(nu);render();}else alert(r.msg);
 }
-
-async function saveAsset() {
-  const name = document.getElementById('f-name').value.trim();
-  const cat = document.getElementById('f-cat').value;
-  const cost = document.getElementById('f-cost').value;
-  const units = document.getElementById('f-units').value || '1';
-  const date = document.getElementById('f-date').value;
-  const ticker = document.getElementById('f-ticker').value.trim();
-
-  if (!name || !cost) { alert('กรุณากรอกชื่อและต้นทุน'); return; }
-
-  const res = await api({
-    action: 'addAsset', username: currentUser,
-    name, cat, cost, units, date, ticker
-  });
-
-  if (res.ok) {
-    // Clear form
-    ['f-name', 'f-cost', 'f-units', 'f-ticker'].forEach(id => document.getElementById(id).value = '');
-    toggleAddForm(false);
-    await loadAssets();
-  } else {
-    alert(res.msg || 'เพิ่มไม่สำเร็จ');
-  }
-}
-
-async function deleteAsset(id) {
-  if (!confirm('ต้องการลบสินทรัพย์นี้?')) return;
-  const res = await api({ action: 'deleteAsset', username: currentUser, id });
-  if (res.ok) { assets = assets.filter(a => a.id !== id); render(); }
-  else alert(res.msg || 'ลบไม่สำเร็จ');
-}
-
-async function editAsset(id) {
-  const asset = assets.find(a => a.id === id);
-  if (!asset) return;
-
-  const newCost = prompt('ต้นทุนรวม (฿):', asset.cost);
-  if (newCost === null) return;
-  const newUnits = prompt('จำนวน/หน่วย:', asset.units);
-  if (newUnits === null) return;
-  const newTicker = prompt('Ticker (เช่น BTC, PTT.BK, GOLD_TH):', asset.ticker || '');
-  if (newTicker === null) return;
-
-  const res = await api({
-    action: 'updateAsset', username: currentUser, id,
-    cost: newCost, units: newUnits, ticker: newTicker
-  });
-
-  if (res.ok) {
-    asset.cost = Number(newCost);
-    asset.units = Number(newUnits);
-    asset.ticker = newTicker;
-    await fetchPrices();
-  } else {
-    alert(res.msg || 'แก้ไขไม่สำเร็จ');
-  }
-}
-
-// Auto-refresh prices every 5 minutes
-setInterval(() => {
-  if (currentUser && assets.some(a => a.ticker)) fetchPrices();
-}, 5 * 60 * 1000);
+setInterval(()=>{if(user&&assets.some(a=>a.ticker))fetchPrices();},5*60*1000);
 </script>
 </body>
 </html>
