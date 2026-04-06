@@ -223,7 +223,11 @@ select.fi option,select.csel option{background:#1e293b;color:var(--text);padding
 <div id="search-modal" class="mo" style="display:none"><div class="md">
 <button class="mcl" onclick="closeSearchModal()">✕</button>
 <div class="mh"><h2>🔍 ค้นหาสินทรัพย์</h2><p>CoinGecko (Crypto) · Yahoo Finance (หุ้น/ETF ทั่วโลก)</p>
-<input class="ms" id="search-input" placeholder="พิมพ์ เช่น bitcoin, PTT, VWRA, tesla, gold..." autocomplete="off"></div>
+<input class="ms" id="search-input" placeholder="พิมพ์ เช่น bitcoin, PTT, VWRA, tesla, gold..." autocomplete="off">
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+<input class="ms" id="manual-ticker" placeholder="หรือพิมพ์ Ticker ตรงๆ เช่น VWRA.L, AAPL" style="margin:0;flex:1;font-size:13px">
+<button class="bsave" onclick="manualTicker()" style="padding:8px 16px;white-space:nowrap;font-size:12px">ใช้ Ticker นี้</button>
+</div></div>
 <div class="tpills"><button class="tp on" data-type="all" onclick="setST('all')">ทั้งหมด</button><button class="tp" data-type="crypto" onclick="setST('crypto')">₿ Crypto</button><button class="tp" data-type="stock" onclick="setST('stock')">📈 หุ้น/ETF</button><button class="tp" data-type="gold" onclick="setST('gold')">🥇 ทองคำ</button></div>
 <div class="mr" id="sresults"><div class="se">พิมพ์ชื่อสินทรัพย์เพื่อค้นหา</div></div>
 </div></div>
@@ -341,8 +345,18 @@ async function doSearch(q){
 
 async function selTicker(i){
   const r=_sr[i];if(!r)return;
-  if(sCtx==='add'){document.getElementById('f-ticker').value=r.ticker;const b=document.getElementById('f-ticker-btn');b.innerHTML='✅ <b>'+r.ticker+'</b> — '+r.name;b.classList.add('sel');const n=document.getElementById('f-name');if(!n.value)n.value=r.name;const cs=document.getElementById('f-cat');if(r.type&&CATS[r.type])cs.value=r.type;closeSearchModal();}
-  else if(sCtx==='swap'&&sTgt){const res=await api({action:'updateAsset',username:user,id:sTgt,ticker:r.ticker});if(res.ok){const a=assets.find(x=>x.id===sTgt);if(a)a.ticker=r.ticker;closeSearchModal();await fetchPrices();}else alert(res.msg);}
+  applyTicker(r.ticker, r.name, r.type);
+}
+
+function manualTicker(){
+  const t=document.getElementById('manual-ticker').value.trim().toUpperCase();
+  if(!t){alert('กรุณาพิมพ์ Ticker');return;}
+  applyTicker(t, t, 'etf');
+}
+
+async function applyTicker(ticker, name, type){
+  if(sCtx==='add'){document.getElementById('f-ticker').value=ticker;const b=document.getElementById('f-ticker-btn');b.innerHTML='✅ <b>'+ticker+'</b> — '+name;b.classList.add('sel');const n=document.getElementById('f-name');if(!n.value)n.value=name;const cs=document.getElementById('f-cat');if(type&&CATS[type])cs.value=type;closeSearchModal();}
+  else if(sCtx==='swap'&&sTgt){const res=await api({action:'updateAsset',username:user,id:sTgt,ticker:ticker});if(res.ok){const a=assets.find(x=>x.id===sTgt);if(a)a.ticker=ticker;closeSearchModal();await fetchPrices();}else alert(res.msg);}
 }
 
 // === DCA MODAL ===
