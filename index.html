@@ -10,590 +10,373 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◆</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #070a10; --s1: #0d1117; --s2: #161b22;
-  --bd: rgba(255,255,255,0.06); --bd2: rgba(255,255,255,0.12);
-  --au: #d4a853; --ad: rgba(212,168,83,0.1); --ab: rgba(212,168,83,0.25);
-  --gn: #3fb950; --gd: rgba(63,185,80,0.1);
-  --rd: #f85149; --rdd: rgba(248,81,73,0.1);
-  --bl: #58a6ff; --bld: rgba(88,166,255,0.1);
-  --tx: #c9d1d9; --mt: #6e7681; --dm: #30363d; --wh: #f0f6fc;
-  --font: 'DM Sans','Noto Sans Thai',system-ui,sans-serif;
-  --mono: 'JetBrains Mono',monospace;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { background: var(--bg); color: var(--tx); font-family: var(--font); font-size: 14px; min-height: 100vh; overflow-x: hidden; }
-input, button, select { font-family: inherit; }
-input:focus { border-color: var(--ab) !important; outline: none; }
-button { cursor: pointer; border: none; }
-::-webkit-scrollbar { width: 0; }
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-.fade { animation: fadeIn 0.3s ease; }
-
-.card { background: var(--s1); border: 1px solid var(--bd); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
-.card-hl { background: linear-gradient(135deg, var(--ad), var(--s1)); border-color: rgba(212,168,83,0.15); }
-.card-title { font-size: 11px; color: var(--mt); letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 600; }
-.mono { font-family: var(--mono); font-weight: 700; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; }
-.badge-au { background: var(--ad); color: var(--au); }
-.badge-gn { background: var(--gd); color: var(--gn); }
-.badge-rd { background: var(--rdd); color: var(--rd); }
-.badge-bl { background: var(--bld); color: var(--bl); }
-
-.inp { width: 100%; background: var(--s2); border: 1px solid var(--bd); border-radius: 10px; padding: 11px 14px; color: var(--tx); font-size: 15px; font-family: var(--mono); }
-.inp-label { font-size: 11px; color: var(--mt); display: block; margin-bottom: 6px; font-weight: 500; }
-
-.btn-primary { width: 100%; padding: 13px; border-radius: 10px; background: linear-gradient(135deg, var(--au), #b8922e); color: #000; font-size: 13px; font-weight: 700; }
-.btn-ghost { width: 100%; padding: 12px; border-radius: 9px; background: transparent; border: 1px solid var(--bd); color: var(--mt); font-size: 13px; }
-.btn-danger { width: 100%; padding: 12px; border-radius: 9px; background: transparent; border: 1px solid var(--rdd); color: var(--rd); font-size: 13px; font-weight: 600; }
-
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.flex-between { display: flex; justify-content: space-between; align-items: center; }
-
-.tab-bar { display: flex; gap: 0; padding: 12px 16px 0; border-bottom: 1px solid var(--bd); position: sticky; top: 0; z-index: 10; background: var(--bg); }
-.tab { padding: 8px 16px; font-size: 13px; font-weight: 400; color: var(--mt); border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; }
-.tab.active { font-weight: 600; color: var(--au); border-bottom-color: var(--au); }
-
-.freq-btn { padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1px solid var(--bd); background: var(--s2); color: var(--mt); cursor: pointer; }
-.freq-btn.active { border-color: var(--ab); background: var(--ad); color: var(--au); }
-
-.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-.status-ok { background: var(--gn); }
-.status-err { background: var(--rd); }
-.status-load { background: var(--au); animation: pulse 1s infinite; }
-
-.tx-row { display: flex; justify-content: space-between; padding: 10px 0; cursor: pointer; }
-.tx-row + .tx-row { border-top: 1px solid var(--bd); }
+:root{--bg:#070a10;--s1:#0d1117;--s2:#161b22;--bd:rgba(255,255,255,0.06);--bd2:rgba(255,255,255,0.12);--au:#d4a853;--ad:rgba(212,168,83,0.1);--ab:rgba(212,168,83,0.25);--gn:#3fb950;--gd:rgba(63,185,80,0.1);--rd:#f85149;--rdd:rgba(248,81,73,0.1);--bl:#58a6ff;--bld:rgba(88,166,255,0.1);--tx:#c9d1d9;--mt:#6e7681;--dm:#30363d;--wh:#f0f6fc;--font:'DM Sans','Noto Sans Thai',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--tx);font-family:var(--font);font-size:14px;min-height:100vh;min-height:100dvh}
+input,button,select{font-family:inherit}input:focus{border-color:var(--ab)!important;outline:none}button{cursor:pointer;border:none}::-webkit-scrollbar{width:0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.fade{animation:fadeIn .3s ease}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:10px}
+.card-hl{background:linear-gradient(135deg,var(--ad),var(--s1));border-color:rgba(212,168,83,0.15)}
+.ct{font-size:11px;color:var(--mt);letter-spacing:.5px;margin-bottom:10px;font-weight:600}
+.mono{font-family:var(--mono);font-weight:700}
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600}
+.b-au{background:var(--ad);color:var(--au)}.b-gn{background:var(--gd);color:var(--gn)}.b-rd{background:var(--rdd);color:var(--rd)}.b-bl{background:var(--bld);color:var(--bl)}
+.inp{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;color:var(--tx);font-size:15px;font-family:var(--mono)}
+.inp-l{font-size:11px;color:var(--mt);display:block;margin-bottom:6px;font-weight:500}
+.btn-p{width:100%;padding:13px;border-radius:10px;background:linear-gradient(135deg,var(--au),#b8922e);color:#000;font-size:13px;font-weight:700}
+.btn-g{width:100%;padding:12px;border-radius:9px;background:0;border:1px solid var(--bd);color:var(--mt);font-size:13px}
+.btn-d{width:100%;padding:12px;border-radius:9px;background:0;border:1px solid var(--rdd);color:var(--rd);font-size:13px;font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fb{display:flex;justify-content:space-between;align-items:center}
+.tab-bar{display:flex;gap:0;padding:12px 16px 0;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:10;background:var(--bg)}
+.tab{padding:8px 16px;font-size:13px;font-weight:400;color:var(--mt);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+.tab.active{font-weight:600;color:var(--au);border-bottom-color:var(--au)}
+.fq{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--bd);background:var(--s2);color:var(--mt);cursor:pointer}
+.fq.on{border-color:var(--ab);background:var(--ad);color:var(--au)}
+.tx-row{display:flex;justify-content:space-between;padding:10px 0;cursor:pointer}
+.tx-row+.tx-row{border-top:1px solid var(--bd)}
+.live-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;background:var(--gn);animation:blink 2s infinite}
 </style>
 </head>
 <body>
-
 <div id="app"></div>
-
 <script>
-/* ═══════════════════════════════════════════
-   VWRA Investment Tracker — Standalone App
-   ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   VWRA Advisor — Real-time Edition
+   ═══════════════════════════════════════ */
+const FREQ=[{v:'lump_sum',l:'Lump Sum',s:'ก้อน'},{v:'monthly',l:'รายเดือน',s:'เดือน'},{v:'quarterly',l:'ไตรมาส',s:'ไตรมาส'},{v:'semiannual',l:'ครึ่งปี',s:'ครึ่งปี'},{v:'annual',l:'รายปี',s:'ปี'}];
+const fqS=v=>FREQ.find(f=>f.v===v)?.s||v;
+const fm=(n,d=2)=>n==null||isNaN(n)?'—':Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fD=d=>d?new Date(d).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}):'';
+const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+const LS={g:(k,f)=>{try{return JSON.parse(localStorage.getItem(k))||f}catch{return f}},s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 
-const FREQ = [
-  { v:'lump_sum', l:'Lump Sum', s:'ก้อน' },
-  { v:'monthly', l:'รายเดือน', s:'เดือน' },
-  { v:'quarterly', l:'ไตรมาส', s:'ไตรมาส' },
-  { v:'semiannual', l:'ครึ่งปี', s:'ครึ่งปี' },
-  { v:'annual', l:'รายปี', s:'ปี' },
-];
-const fqL = v => FREQ.find(f=>f.v===v)?.l||v;
-const fqS = v => FREQ.find(f=>f.v===v)?.s||v;
-const fm = (n,d=2) => n==null||isNaN(n)?'—':Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
-const fD = d => d?new Date(d).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}):'';
-
-/* ── Storage ── */
-const LS = {
-  get(k,fb) { try { return JSON.parse(localStorage.getItem(k))||fb; } catch { return fb; } },
-  set(k,v) { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} },
-};
-
-const SEED = [
-  { id:1,type:'buy',date:'2026-03-26',amountTHB:2633150,amountUSD:79953.15,exchangeRate:32.93,vwraPrice:167.56,shares:477.1973,commission:45.50,note:'ลงทุนครั้งแรก',investType:'lump_sum' },
-  { id:2,type:'buy',date:'2026-04-02',amountTHB:300000,amountUSD:9129.99,exchangeRate:32.86,vwraPrice:164.34,shares:55.5555,commission:4.56,note:'DCA ครั้งที่ 2',investType:'monthly' },
+const SEED=[
+  {id:1,type:'buy',date:'2026-03-26',amountTHB:2633150,amountUSD:79953.15,exchangeRate:32.93,vwraPrice:167.56,shares:477.1973,commission:45.50,note:'ลงทุนครั้งแรก',investType:'lump_sum'},
+  {id:2,type:'buy',date:'2026-04-02',amountTHB:300000,amountUSD:9129.99,exchangeRate:32.86,vwraPrice:164.34,shares:55.5555,commission:4.56,note:'DCA ครั้งที่ 2',investType:'monthly'},
 ];
 
 /* ── State ── */
-let state = {
-  tab: 'dash',
-  port: [],
-  sett: { monthlyBudget: 50000, frequency: 'monthly' },
-  price: { vwra: 0, rate: 0, vSrc: '', rSrc: '', time: null, loading: false, logs: [] },
-  editTx: null,
-  showForm: false,
+let S={
+  tab:'dash',port:[],sett:{monthlyBudget:50000,frequency:'monthly'},
+  price:{vwra:0,rate:0,vSrc:'',rSrc:'',time:null,loading:false,live:false,logs:[]},
+  editTx:null,showForm:false,
+  // Cached working API endpoints
+  cachedRateAPI:null, cachedVwraAPI:null,
 };
+let formData={};
+let refreshTimer=null;
+const REFRESH_MS=3000; // 3 seconds
 
-function init() {
-  const inited = LS.get('vwra-inited', false);
-  if (!inited) {
-    state.port = SEED;
-    LS.set('vwra-port', SEED);
-    LS.set('vwra-sett', state.sett);
-    LS.set('vwra-inited', true);
-  } else {
-    state.port = LS.get('vwra-port', []);
-    state.sett = LS.get('vwra-sett', state.sett);
-  }
-  const sp = LS.get('vwra-price', null);
-  if (sp) { state.price.vwra = sp.v || 0; state.price.rate = sp.r || 0; }
+/* ── Init ── */
+function init(){
+  if(!LS.g('vi2',false)){S.port=SEED;LS.s('vp2',SEED);LS.s('vs2',S.sett);LS.s('vi2',true)}
+  else{S.port=LS.g('vp2',[]);S.sett=LS.g('vs2',S.sett)}
+  const sp=LS.g('vpr2',null);
+  if(sp){S.price.vwra=sp.v||0;S.price.rate=sp.r||0}
+  S.cachedRateAPI=LS.g('vc-rate',null);
+  S.cachedVwraAPI=LS.g('vc-vwra',null);
   render();
-  if (state.port.length > 0) fetchPrices();
+  if(S.port.length>0)startLive();
+}
+function save(){
+  LS.s('vp2',S.port);LS.s('vs2',S.sett);
+  if(S.price.vwra>0||S.price.rate>0)LS.s('vpr2',{v:S.price.vwra,r:S.price.rate});
 }
 
-function save() {
-  LS.set('vwra-port', state.port);
-  LS.set('vwra-sett', state.sett);
-  if (state.price.vwra > 0 || state.price.rate > 0)
-    LS.set('vwra-price', { v: state.price.vwra, r: state.price.rate });
+/* ══════════════════════════════════════
+   REAL-TIME PRICE ENGINE
+   ══════════════════════════════════════ */
+// All possible API sources
+const RATE_APIS=[
+  {id:'frankfurter',n:'Frankfurter',u:'https://api.frankfurter.app/latest?from=USD&to=THB',p:d=>d.rates?.THB},
+  {id:'openxr',n:'Open ER',u:'https://open.er-api.com/v6/latest/USD',p:d=>d.rates?.THB},
+];
+const VWRA_APIS=[
+  {id:'yahoo1',n:'Yahoo Finance',u:'https://query1.finance.yahoo.com/v8/finance/chart/VWRA.L?interval=1d&range=1d',p:d=>d.chart?.result?.[0]?.meta?.regularMarketPrice},
+  {id:'yahoo2',n:'Yahoo v2',u:'https://query2.finance.yahoo.com/v8/finance/chart/VWRA.L?interval=1d&range=1d',p:d=>d.chart?.result?.[0]?.meta?.regularMarketPrice},
+  {id:'proxy1',n:'AllOrigins+Yahoo',u:'https://api.allorigins.win/raw?url='+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/VWRA.L?interval=1d&range=1d'),p:d=>d.chart?.result?.[0]?.meta?.regularMarketPrice},
+  {id:'proxy2',n:'corsproxy+Yahoo',u:'https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/VWRA.L?interval=1d&range=1d'),p:d=>d.chart?.result?.[0]?.meta?.regularMarketPrice},
+];
+
+async function tryAPI(api,log){
+  const r=await fetch(api.u,{signal:AbortSignal.timeout(5000)});
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  const d=await r.json();
+  const v=api.p(d);
+  if(!v||v<=0)throw new Error('No data');
+  return v;
 }
 
-/* ══════════════════════════════
-   PRICE FETCHING — Real APIs
-   ══════════════════════════════ */
-async function fetchPrices() {
-  const p = state.price;
-  p.loading = true; p.logs = []; render();
-  const log = m => { p.logs.push(m); render(); };
+// Fast fetch — use cached source if available
+async function fetchFast(){
+  const p=S.price;
+  let rate=0,vwra=0,rSrc='',vSrc='';
 
-  let rate = 0, vwra = 0, rSrc = '', vSrc = '';
-
-  // ── Exchange Rate APIs ──
-  const rateAPIs = [
-    { n:'Frankfurter', u:'https://api.frankfurter.app/latest?from=USD&to=THB', p: d=>d.rates?.THB },
-    { n:'Open ER', u:'https://open.er-api.com/v6/latest/USD', p: d=>d.rates?.THB },
-  ];
-
-  for (const api of rateAPIs) {
-    if (rate > 0) break;
-    try {
-      log(`[Rate] ${api.n}...`);
-      const r = await fetch(api.u);
-      if (!r.ok) { log(`[Rate] ${api.n}: HTTP ${r.status}`); continue; }
-      const d = await r.json();
-      const v = api.p(d);
-      if (v > 0) { rate = v; rSrc = api.n; log(`[Rate] ✅ ${api.n}: ${v}`); }
-      else log(`[Rate] ${api.n}: ไม่พบข้อมูล`);
-    } catch(e) { log(`[Rate] ${api.n}: ${e.message}`); }
+  // ── Rate: try cached first, then scan ──
+  if(S.cachedRateAPI){
+    const api=RATE_APIS.find(a=>a.id===S.cachedRateAPI);
+    if(api){try{rate=await tryAPI(api);rSrc=api.n}catch{S.cachedRateAPI=null;LS.s('vc-rate',null)}}
   }
-
-  // ── VWRA.L Price APIs ──
-  // 1. Try Yahoo Finance directly
-  const yahooURLs = [
-    'https://query1.finance.yahoo.com/v8/finance/chart/VWRA.L?interval=1d&range=1d',
-    'https://query2.finance.yahoo.com/v8/finance/chart/VWRA.L?interval=1d&range=1d',
-  ];
-  for (const url of yahooURLs) {
-    if (vwra > 0) break;
-    try {
-      log(`[VWRA] Yahoo Finance...`);
-      const r = await fetch(url);
-      if (!r.ok) { log(`[VWRA] Yahoo: HTTP ${r.status}`); continue; }
-      const d = await r.json();
-      const v = d.chart?.result?.[0]?.meta?.regularMarketPrice;
-      if (v > 0) { vwra = v; vSrc = 'Yahoo Finance'; log(`[VWRA] ✅ Yahoo: $${v}`); }
-      else log(`[VWRA] Yahoo: ไม่พบราคา`);
-    } catch(e) { log(`[VWRA] Yahoo: ${e.message}`); }
-  }
-
-  // 2. Try via CORS proxies
-  if (vwra === 0) {
-    const proxies = [
-      { n:'AllOrigins', u: url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` },
-      { n:'corsproxy.io', u: url => `https://corsproxy.io/?${encodeURIComponent(url)}` },
-    ];
-    const target = 'https://query1.finance.yahoo.com/v8/finance/chart/VWRA.L?interval=1d&range=1d';
-
-    for (const proxy of proxies) {
-      if (vwra > 0) break;
-      try {
-        log(`[VWRA] ${proxy.n} proxy...`);
-        const r = await fetch(proxy.u(target));
-        if (!r.ok) { log(`[VWRA] ${proxy.n}: HTTP ${r.status}`); continue; }
-        const d = await r.json();
-        const v = d.chart?.result?.[0]?.meta?.regularMarketPrice;
-        if (v > 0) { vwra = v; vSrc = `Yahoo via ${proxy.n}`; log(`[VWRA] ✅ ${proxy.n}: $${v}`); }
-        else log(`[VWRA] ${proxy.n}: ไม่พบราคา`);
-      } catch(e) { log(`[VWRA] ${proxy.n}: ${e.message}`); }
+  if(!rate){
+    for(const api of RATE_APIS){
+      try{rate=await tryAPI(api);rSrc=api.n;S.cachedRateAPI=api.id;LS.s('vc-rate',api.id);break}catch{}
     }
   }
 
-  // 3. Try Google Finance scraping via proxy
-  if (vwra === 0) {
-    try {
-      log('[VWRA] Google Finance...');
-      const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.google.com/finance/quote/VWRA-LON'));
-      if (r.ok) {
-        const html = await r.text();
-        const m = html.match(/data-last-price="([\d.]+)"/);
-        if (m) { vwra = parseFloat(m[1]); vSrc = 'Google Finance'; log(`[VWRA] ✅ Google: $${vwra}`); }
-        else log('[VWRA] Google: ไม่พบราคาในหน้า');
-      }
-    } catch(e) { log(`[VWRA] Google: ${e.message}`); }
+  // ── VWRA: try cached first, then scan ──
+  if(S.cachedVwraAPI){
+    const api=VWRA_APIS.find(a=>a.id===S.cachedVwraAPI);
+    if(api){try{vwra=await tryAPI(api);vSrc=api.n}catch{S.cachedVwraAPI=null;LS.s('vc-vwra',null)}}
+  }
+  if(!vwra){
+    for(const api of VWRA_APIS){
+      try{vwra=await tryAPI(api);vSrc=api.n;S.cachedVwraAPI=api.id;LS.s('vc-vwra',api.id);break}catch{}
+    }
   }
 
-  // Update state
-  if (vwra > 0) p.vwra = vwra;
-  if (rate > 0) p.rate = rate;
-  p.vSrc = vSrc; p.rSrc = rSrc;
-  p.time = new Date();
-  p.loading = false;
-
-  if (vwra === 0 && rate === 0) log('❌ ดึงข้อมูลไม่ได้ — กรอกเองด้านล่าง');
-  else if (vwra === 0) log('❌ ดึงราคา VWRA ไม่ได้ — กรอกเอง');
-  else if (rate === 0) log('❌ ดึงเรทไม่ได้ — กรอกเอง');
-
-  save(); render();
+  if(vwra>0){p.vwra=vwra;p.vSrc=vSrc}
+  if(rate>0){p.rate=rate;p.rSrc=rSrc}
+  if(vwra>0||rate>0){p.time=new Date();p.live=true;save()}
+  return{vwra,rate};
 }
 
-/* ── Calculations ── */
-function calc() {
-  const b = state.port.filter(t=>t.type==='buy');
+// Full scan with logging (first time or manual refresh)
+async function fetchFull(){
+  const p=S.price;p.loading=true;p.logs=[];render();
+  const log=m=>{p.logs.push(m);render()};
+
+  let rate=0,vwra=0,rSrc='',vSrc='';
+  log('เริ่มค้นหาแหล่งข้อมูล...');
+
+  for(const api of RATE_APIS){
+    if(rate>0)break;
+    try{log(`[Rate] ${api.n}...`);rate=await tryAPI(api);rSrc=api.n;S.cachedRateAPI=api.id;LS.s('vc-rate',api.id);log(`[Rate] ✅ ${api.n}: ${rate}`)}
+    catch(e){log(`[Rate] ${api.n}: ${e.message}`)}
+  }
+
+  for(const api of VWRA_APIS){
+    if(vwra>0)break;
+    try{log(`[VWRA] ${api.n}...`);vwra=await tryAPI(api);vSrc=api.n;S.cachedVwraAPI=api.id;LS.s('vc-vwra',api.id);log(`[VWRA] ✅ ${api.n}: $${vwra}`)}
+    catch(e){log(`[VWRA] ${api.n}: ${e.message}`)}
+  }
+
+  if(vwra>0){p.vwra=vwra;p.vSrc=vSrc}
+  if(rate>0){p.rate=rate;p.rSrc=rSrc}
+  p.time=new Date();p.loading=false;p.live=(vwra>0||rate>0);
+  if(!vwra)log('❌ ดึงราคา VWRA ไม่ได้ — กรอกเอง');
+  if(!rate)log('❌ ดึงเรทไม่ได้ — กรอกเอง');
+  save();render();
+}
+
+function startLive(){
+  fetchFull().then(()=>{
+    if(S.price.live){
+      refreshTimer=setInterval(async()=>{
+        try{await fetchFast();updatePriceUI()}catch{}
+      },REFRESH_MS);
+    }
+  });
+}
+function stopLive(){if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null}}
+
+// Lightweight UI update (no full re-render to preserve form state)
+function updatePriceUI(){
+  const p=S.price;
+  const st=calc();
+  const el=id=>document.getElementById(id);
+  
+  if(el('hdr-vwra'))el('hdr-vwra').textContent='$'+fm(p.vwra);
+  if(el('hdr-rate'))el('hdr-rate').textContent=fm(p.rate);
+  if(el('hdr-time'))el('hdr-time').textContent=p.time?p.time.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'';
+  if(el('inp-vwra'))el('inp-vwra').value=p.vwra||'';
+  if(el('inp-rate'))el('inp-rate').value=p.rate||'';
+
+  // Update value + P&L
+  if(el('val-usd'))el('val-usd').textContent='$'+fm(st.cU);
+  if(el('val-thb')&&st.cT!=null)el('val-thb').textContent='≈ ฿'+fm(st.cT,0);
+  if(el('pl-badge')&&st.pP!=null){el('pl-badge').textContent=(st.pP>=0?'+':'')+fm(st.pP,1)+'%';el('pl-badge').className='badge '+(st.pP>=0?'b-gn':'b-rd')}
+  if(el('pl-usd')&&st.pU!=null){el('pl-usd').textContent=(st.pU>=0?'+':'')+fm(st.pU);el('pl-usd').style.color=st.pU>=0?'var(--gn)':'var(--rd)'}
+  if(el('pl-thb')&&st.pT!=null){el('pl-thb').textContent=(st.pT>=0?'+':'')+'฿'+fm(st.pT,0);el('pl-thb').style.color=st.pT>=0?'var(--gn)':'var(--rd)'}
+  if(el('pl-pct')&&st.pP!=null){el('pl-pct').textContent=(st.pP>=0?'+':'')+fm(st.pP,1)+'%';el('pl-pct').style.color=st.pP>=0?'var(--gn)':'var(--rd)'}
+  if(el('pr-now'))el('pr-now').textContent='$'+fm(p.vwra);
+  if(el('pl-per'))el('pl-per').textContent=(p.vwra-st.aP>=0?'+':'')+'$'+fm(p.vwra-st.aP);
+  if(el('fx-val')&&st.fxI!=null)el('fx-val').textContent=(st.fxI>=0?'+':'')+'฿'+fm(st.fxI,0);
+}
+
+/* ── Calculation ── */
+function calc(){
+  const b=S.port.filter(t=>t.type==='buy');
   let tT=0,tU=0,tS=0,tC=0;
-  b.forEach(tx=>{ tT+=tx.amountTHB||0; tU+=tx.amountUSD||0; tS+=tx.shares||0; tC+=tx.commission||0; });
-  const vwra = state.price.vwra, rate = state.price.rate;
-  const aP=tS>0?tU/tS:0, aR=tU>0?tT/tU:0;
+  b.forEach(tx=>{tT+=tx.amountTHB||0;tU+=tx.amountUSD||0;tS+=tx.shares||0;tC+=tx.commission||0});
+  const vwra=S.price.vwra,rate=S.price.rate;
+  const aP=tS>0?tU/tS:0,aR=tU>0?tT/tU:0;
   const live=vwra>0;
-  const cU=live?tS*vwra:null, cT=cU!=null&&rate>0?cU*rate:null;
+  const cU=live?tS*vwra:null;
+  const cT=cU!=null&&rate>0?cU*rate:null;
   const pU=cU!=null?cU-tU:null;
+  // THB P&L = กำไร USD × เรทปัจจุบัน
   const pT=pU!=null&&rate>0?pU*rate:null;
-  const fxI=cT!=null&&pU!=null?(cT-tT)-(pU*rate):null;
+  // FX Impact = มูลค่าปัจจุบัน × (เรทปัจจุบัน - เรทเฉลี่ยตอนซื้อ)
+  // = ถ้าเรทไม่เปลี่ยน พอร์ตจะมีค่ากี่บาท vs ค่าจริง
+  const fxI=cU!=null&&rate>0&&aR>0?cU*(rate-aR):null;
   const pP=cU!=null&&tU>0?(pU/tU)*100:null;
-  return {tT,tU,tS,aP,aR,cU,cT,pU,pT,pP,fxI,tC,cTHB:tC*(rate||aR||33),cnt:b.length,live};
+  return{tT,tU,tS,aP,aR,cU,cT,pU,pT,pP,fxI,tC,cTHB:tC*(rate||aR||33),cnt:b.length,live};
 }
 
 /* ══════════════════
    RENDER
    ══════════════════ */
-function render() {
-  const st = calc();
-  const p = state.price;
-  const app = document.getElementById('app');
-
-  app.innerHTML = `
-    <!-- Header -->
-    <div style="padding:16px 16px 0;display:flex;justify-content:space-between;align-items:center">
+function render(){
+  if(S.showForm||S.editTx)captureForm();
+  const st=calc(),p=S.price;
+  document.getElementById('app').innerHTML=`
+    <div style="padding:16px 16px 0" class="fb">
       <div style="font-size:18px;font-weight:800;color:var(--au)">◆ VWRA Advisor</div>
       <div style="text-align:right;font-family:var(--mono);font-size:11px">
-        ${p.vwra>0?`<div style="color:var(--mt)">VWRA.L <span style="color:var(--gn);font-weight:700">$${fm(p.vwra)}</span></div>`:''}
-        ${p.rate>0?`<div style="color:var(--mt)">THB/USD <span style="color:var(--au);font-weight:600">${fm(p.rate)}</span></div>`:''}
+        ${p.vwra>0?`<div style="color:var(--mt)">VWRA.L <span id="hdr-vwra" style="color:var(--gn);font-weight:700">$${fm(p.vwra)}</span></div>`:''}
+        ${p.rate>0?`<div style="color:var(--mt)">THB/USD <span id="hdr-rate" style="color:var(--au);font-weight:600">${fm(p.rate)}</span></div>`:''}
       </div>
     </div>
-
-    <!-- Tabs -->
     <div class="tab-bar">
-      <div class="tab ${state.tab==='dash'?'active':''}" onclick="setTab('dash')">ภาพรวม</div>
-      <div class="tab ${state.tab==='log'?'active':''}" onclick="setTab('log')">บันทึก</div>
-      <div class="tab ${state.tab==='set'?'active':''}" onclick="setTab('set')">ตั้งค่า</div>
+      ${['dash','log','set'].map((t,i)=>`<div class="tab ${S.tab===t?'active':''}" onclick="setTab('${t}')">${['ภาพรวม','บันทึก','ตั้งค่า'][i]}</div>`).join('')}
     </div>
-
-    <div style="padding:14px 16px 100px" class="fade">
-      ${state.tab==='dash'?renderDash(st):state.tab==='log'?renderLog(st):renderSet()}
-    </div>
-  `;
+    <div style="padding:14px 16px 100px" class="fade">${S.tab==='dash'?rDash(st):S.tab==='log'?rLog():rSet()}</div>`;
 }
 
-function setTab(t) { state.tab = t; state.editTx = null; state.showForm = false; render(); }
+function setTab(t){S.tab=t;S.editTx=null;S.showForm=false;render()}
 
-function renderDash(st) {
-  const p = state.price;
-  const has = state.port.length > 0;
-  if (!has) return `<div class="card" style="text-align:center;padding:40px 20px;color:var(--dm)">ยังไม่มีข้อมูล — ไปแท็บ "บันทึก"</div>`;
-
-  return `
-    <!-- Price Fetch -->
+function rDash(st){
+  const p=S.price,has=S.port.length>0;
+  if(!has)return`<div class="card" style="text-align:center;padding:40px;color:var(--dm)">ยังไม่มีข้อมูล</div>`;
+  const plC=st.pU>=0;
+  return`
+    <!-- Price -->
     <div class="card card-hl">
-      <div class="flex-between" style="margin-bottom:12px">
-        <div class="card-title" style="color:var(--au);margin-bottom:0">◆ ราคาปัจจุบัน</div>
-        <button onclick="fetchPrices()" ${p.loading?'disabled':''} style="background:${p.loading?'var(--ad)':'linear-gradient(135deg,var(--au),#b8922e)'};padding:6px 14px;border-radius:8px;color:${p.loading?'var(--mt)':'#000'};font-size:11px;font-weight:700">
-          ${p.loading?'<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(0,0,0,0.2);border-top-color:#000;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:4px"></span>โหลด...':'↻ ดึงราคา'}
+      <div class="fb" style="margin-bottom:10px">
+        <div>
+          <div class="ct" style="color:var(--au);margin-bottom:4px">◆ ราคา REAL-TIME</div>
+          ${p.live?`<div style="font-size:10px;color:var(--dm)"><span class="live-dot"></span>LIVE ทุก ${REFRESH_MS/1000}s · <span id="hdr-time">${p.time?p.time.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}</span></div>`:''}
+        </div>
+        <button onclick="stopLive();fetchFull().then(()=>{if(S.price.live)refreshTimer=setInterval(async()=>{try{await fetchFast();updatePriceUI()}catch{}},REFRESH_MS)})" ${p.loading?'disabled':''} style="background:${p.loading?'var(--ad)':'linear-gradient(135deg,var(--au),#b8922e)'};padding:6px 14px;border-radius:8px;color:${p.loading?'var(--mt)':'#000'};font-size:11px;font-weight:700">
+          ${p.loading?'โหลด...':'↻ สแกนใหม่'}
         </button>
       </div>
 
-      <!-- Status -->
-      ${p.time?`<div style="font-size:10px;color:var(--dm);margin-bottom:8px">
-        ${p.vwra>0?`<span class="status-dot status-ok"></span>VWRA: ${p.vSrc}`:`<span class="status-dot status-err"></span>VWRA: กรอกเอง`}
+      ${p.vSrc||p.rSrc?`<div style="font-size:10px;color:var(--dm);margin-bottom:8px">
+        ${p.vSrc?`<span style="color:var(--gn)">●</span> VWRA: ${p.vSrc}`:'<span style="color:var(--rd)">●</span> VWRA: กรอกเอง'}
         &nbsp;·&nbsp;
-        ${p.rate>0&&p.rSrc?`<span class="status-dot status-ok"></span>Rate: ${p.rSrc}`:`<span class="status-dot status-err"></span>Rate: กรอกเอง`}
-        &nbsp;·&nbsp;${p.time.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}
+        ${p.rSrc?`<span style="color:var(--gn)">●</span> Rate: ${p.rSrc}`:'<span style="color:var(--rd)">●</span> Rate: กรอกเอง'}
       </div>`:''}
 
-      <div class="grid-2" style="gap:10px;margin-bottom:8px">
-        <div>
-          <label class="inp-label">VWRA.L (USD) ${p.vSrc?`<span style="color:var(--gn);font-size:9px">· ${p.vSrc}</span>`:''}</label>
-          <input type="number" step="0.01" placeholder="172.76" value="${p.vwra||''}" class="inp" style="${p.vwra>0?'border-color:rgba(63,185,80,0.3)':''}" oninput="setPriceManual('vwra',this.value)">
-        </div>
-        <div>
-          <label class="inp-label">THB/USD ${p.rSrc?`<span style="color:var(--gn);font-size:9px">· ${p.rSrc}</span>`:''}</label>
-          <input type="number" step="0.01" placeholder="32.24" value="${p.rate||''}" class="inp" style="${p.rate>0?'border-color:var(--ab)':''}" oninput="setPriceManual('rate',this.value)">
-        </div>
+      <div class="g2" style="gap:10px;margin-bottom:6px">
+        <div><label class="inp-l">VWRA.L (USD)</label><input id="inp-vwra" type="number" step="0.01" placeholder="172.76" value="${p.vwra||''}" class="inp" style="${p.vwra>0?'border-color:rgba(63,185,80,0.3)':''}" oninput="S.price.vwra=parseFloat(this.value)||0;S.price.vSrc='Manual';save();updatePriceUI()"></div>
+        <div><label class="inp-l">THB/USD</label><input id="inp-rate" type="number" step="0.01" placeholder="32.24" value="${p.rate||''}" class="inp" style="${p.rate>0?'border-color:var(--ab)':''}" oninput="S.price.rate=parseFloat(this.value)||0;S.price.rSrc='Manual';save();updatePriceUI()"></div>
       </div>
-
-      ${p.logs.length>0?`
-        <details style="margin-top:6px">
-          <summary style="font-size:10px;color:var(--dm);cursor:pointer">Log (${p.logs.length})</summary>
-          <div style="margin-top:6px;padding:8px 10px;background:rgba(0,0,0,0.3);border-radius:8px;max-height:150px;overflow-y:auto">
-            ${p.logs.map(l=>`<div style="font-size:9px;font-family:var(--mono);line-height:1.6;color:${l.includes('✅')?'var(--gn)':l.includes('❌')?'var(--rd)':'var(--dm)'}">${esc(l)}</div>`).join('')}
-          </div>
-        </details>
-      `:''}
+      ${p.logs.length>0?`<details style="margin-top:4px"><summary style="font-size:10px;color:var(--dm);cursor:pointer">Log (${p.logs.length})</summary><div style="margin-top:6px;padding:8px;background:rgba(0,0,0,.3);border-radius:8px;max-height:120px;overflow-y:auto">${p.logs.map(l=>`<div style="font-size:9px;font-family:var(--mono);line-height:1.6;color:${l.includes('✅')?'var(--gn)':l.includes('❌')?'var(--rd)':'var(--dm)'}">${esc(l)}</div>`).join('')}</div></details>`:''}
     </div>
 
-    <!-- Portfolio Value -->
+    <!-- Value -->
     <div class="card">
-      <div class="card-title">มูลค่าพอร์ต</div>
-      ${st.live?`
-        <div style="font-size:32px;font-weight:800;color:var(--wh);letter-spacing:-0.5px" class="mono">$${fm(st.cU)}</div>
-        ${p.rate>0?`<div style="font-size:14px;color:var(--mt);margin-top:4px" class="mono">≈ ฿${fm(st.cT,0)}</div>`:''}
-      `:`<div style="font-size:13px;color:var(--dm)">กรอกราคา VWRA.L ด้านบน</div>`}
+      <div class="ct">มูลค่าพอร์ต</div>
+      ${st.live?`<div id="val-usd" style="font-size:32px;font-weight:800;color:var(--wh);letter-spacing:-.5px" class="mono">$${fm(st.cU)}</div>
+      ${p.rate>0?`<div id="val-thb" style="font-size:14px;color:var(--mt);margin-top:4px" class="mono">≈ ฿${fm(st.cT,0)}</div>`:''}`
+      :`<div style="font-size:13px;color:var(--dm)">กรอกราคาด้านบนหรือรอ LIVE</div>`}
       <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
-        ${st.live?`<span class="badge ${st.pU>=0?'badge-gn':'badge-rd'}">${st.pU>=0?'+':''}${fm(st.pP,1)}%</span>`:''}
-        <span class="badge badge-au">${fm(st.tS,4)} หุ้น</span>
+        ${st.live?`<span id="pl-badge" class="badge ${plC?'b-gn':'b-rd'}">${plC?'+':''}${fm(st.pP,1)}%</span>`:''}<span class="badge b-au">${fm(st.tS,4)} หุ้น</span>
       </div>
     </div>
 
     <!-- P&L -->
-    ${st.live?`
-    <div class="card" style="border-color:${st.pU>=0?'rgba(63,185,80,0.15)':'rgba(248,81,73,0.15)'}">
-      <div class="card-title" style="color:${st.pU>=0?'var(--gn)':'var(--rd)'}">กำไร / ขาดทุน</div>
-      <div class="grid-2" style="gap:14px">
-        <div>
-          <div style="font-size:10px;color:var(--dm)">USD</div>
-          <div style="font-size:22px;font-weight:800;color:${st.pU>=0?'var(--gn)':'var(--rd)'};margin-top:2px" class="mono">${st.pU>=0?'+':''}${fm(st.pU)}</div>
-        </div>
-        ${p.rate>0?`<div>
-          <div style="font-size:10px;color:var(--dm)">THB</div>
-          <div style="font-size:22px;font-weight:800;color:${st.pT>=0?'var(--gn)':'var(--rd)'};margin-top:2px" class="mono">${st.pT>=0?'+':''}฿${fm(st.pT,0)}</div>
-        </div>`:''}
+    ${st.live?`<div class="card" style="border-color:${plC?'rgba(63,185,80,.15)':'rgba(248,81,73,.15)'}">
+      <div class="ct" style="color:${plC?'var(--gn)':'var(--rd)'}">กำไร / ขาดทุน</div>
+      <div class="g2" style="gap:14px">
+        <div><div style="font-size:10px;color:var(--dm)">USD</div><div id="pl-usd" style="font-size:22px;font-weight:800;color:${plC?'var(--gn)':'var(--rd)'};margin-top:2px" class="mono">${plC?'+':''}${fm(st.pU)}</div></div>
+        ${p.rate>0?`<div><div style="font-size:10px;color:var(--dm)">THB (กำไร USD × เรทปัจจุบัน)</div><div id="pl-thb" style="font-size:22px;font-weight:800;color:${st.pT>=0?'var(--gn)':'var(--rd)'};margin-top:2px" class="mono">${st.pT>=0?'+':''}฿${fm(st.pT,0)}</div></div>`:''}
       </div>
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding-top:12px;border-top:1px solid var(--bd)">
-        <div><div style="font-size:9px;color:var(--dm)">%P&L</div><div style="font-size:15px;font-weight:700;margin-top:2px;color:${st.pP>=0?'var(--gn)':'var(--rd)'}" class="mono">${st.pP>=0?'+':''}${fm(st.pP,1)}%</div></div>
-        <div><div style="font-size:9px;color:var(--dm)">ราคาตอนนี้</div><div style="font-size:15px;font-weight:700;margin-top:2px" class="mono">$${fm(p.vwra)}</div></div>
+        <div><div style="font-size:9px;color:var(--dm)">%P&L</div><div id="pl-pct" style="font-size:15px;font-weight:700;margin-top:2px;color:${plC?'var(--gn)':'var(--rd)'}" class="mono">${plC?'+':''}${fm(st.pP,1)}%</div></div>
+        <div><div style="font-size:9px;color:var(--dm)">ราคาตอนนี้</div><div id="pr-now" style="font-size:15px;font-weight:700;margin-top:2px" class="mono">$${fm(p.vwra)}</div></div>
         <div><div style="font-size:9px;color:var(--dm)">ต้นทุนเฉลี่ย</div><div style="font-size:15px;font-weight:700;margin-top:2px" class="mono">$${fm(st.aP)}</div></div>
       </div>
-      <div style="margin-top:10px;padding:8px 12px;background:${st.pU>=0?'var(--gd)':'var(--rdd)'};border-radius:8px;display:flex;justify-content:space-between;font-size:12px">
-        <span style="color:${st.pU>=0?'var(--gn)':'var(--rd)'}">กำไร/ขาดทุนต่อหุ้น</span>
-        <span class="mono" style="color:${st.pU>=0?'var(--gn)':'var(--rd)'}">${(p.vwra-st.aP)>=0?'+':''}$${fm(p.vwra-st.aP)}</span>
+      <div style="margin-top:10px;padding:8px 12px;background:${plC?'var(--gd)':'var(--rdd)'};border-radius:8px;display:flex;justify-content:space-between;font-size:12px">
+        <span style="color:${plC?'var(--gn)':'var(--rd)'}">กำไร/ขาดทุนต่อหุ้น</span>
+        <span id="pl-per" class="mono" style="color:${plC?'var(--gn)':'var(--rd)'}">${(p.vwra-st.aP)>=0?'+':''}$${fm(p.vwra-st.aP)}</span>
       </div>
-      ${st.fxI!=null&&p.rate>0?`
-      <div style="margin-top:6px;padding:8px 12px;background:var(--bld);border-radius:8px;display:flex;justify-content:space-between;font-size:12px">
-        <span style="color:var(--bl)">ผลกระทบค่าเงิน</span>
-        <span class="mono" style="color:var(--bl)">${st.fxI>=0?'+':''}฿${fm(st.fxI,0)}</span>
-      </div>`:''}
-    </div>`:''}
-
-    <!-- Stats -->
-    <div class="grid-2" style="margin-bottom:10px">
-      ${[['ลงทุนรวม (THB)',`฿${fm(st.tT,0)}`],['ลงทุนรวม (USD)',`$${fm(st.tU)}`],['ต้นทุนเฉลี่ย',`$${fm(st.aP)}`],['เรทเฉลี่ย',fm(st.aR)]].map(([l,v])=>`
-        <div class="card" style="margin-bottom:0;padding:12px 14px">
-          <div style="font-size:9px;color:var(--dm);letter-spacing:0.5px;margin-bottom:4px">${l}</div>
-          <div style="font-size:15px;font-weight:700;color:var(--wh)" class="mono">${v}</div>
-        </div>`).join('')}
-    </div>
-
-    <!-- Commission -->
-    <div class="card">
-      <div class="flex-between">
-        <div>
-          <div class="card-title" style="color:var(--rd)">ค่าธรรมเนียม</div>
-          <div style="font-size:20px;font-weight:800;color:var(--rd)" class="mono">$${fm(st.tC)}</div>
-          <div style="font-size:12px;color:var(--mt)">≈ ฿${fm(st.cTHB,0)} · ${fm(st.tU>0?(st.tC/st.tU)*100:0,3)}%</div>
+      ${st.fxI!=null&&p.rate>0?`<div style="margin-top:6px;padding:8px 12px;background:var(--bld);border-radius:8px;font-size:12px">
+        <div style="display:flex;justify-content:space-between;color:var(--bl)">
+          <span>ผลกระทบค่าเงิน (FX)</span>
+          <span id="fx-val" class="mono">${st.fxI>=0?'+':''}฿${fm(st.fxI,0)}</span>
         </div>
-      </div>
+        <div style="font-size:10px;color:var(--dm);margin-top:4px">สูตร: มูลค่าพอร์ต × (เรทปัจจุบัน ${fm(p.rate)} − เรทตอนซื้อ ${fm(st.aR)})</div>
+      </div>`:''}</div>`:''
+    }
+
+    <div class="g2" style="margin-bottom:10px">
+      ${[['ลงทุนรวม (THB)',`฿${fm(st.tT,0)}`],['ลงทุนรวม (USD)',`$${fm(st.tU)}`],['ต้นทุนเฉลี่ย',`$${fm(st.aP)}`],['เรทเฉลี่ย',fm(st.aR)]].map(([l,v])=>`<div class="card" style="margin-bottom:0;padding:12px 14px"><div style="font-size:9px;color:var(--dm);margin-bottom:4px">${l}</div><div style="font-size:15px;font-weight:700;color:var(--wh)" class="mono">${v}</div></div>`).join('')}
     </div>
 
-    <!-- Recent -->
-    <div class="card">
-      <div class="card-title">รายการล่าสุด · กดเพื่อแก้ไข</div>
-      ${[...state.port].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5).map(tx=>`
-        <div class="tx-row" onclick="editTx(${tx.id})">
-          <div>
-            <div style="display:flex;gap:5px;align-items:center">
-              <span class="badge badge-bl">${fqS(tx.investType)}</span>
-              <span style="font-size:12px;color:var(--mt)">${fD(tx.date)}</span>
-            </div>
-            <div style="font-size:11px;color:var(--dm);margin-top:4px">${fm(tx.shares,4)} หุ้น @ $${fm(tx.vwraPrice)} · เรท ${fm(tx.exchangeRate)}</div>
-          </div>
-          <div style="text-align:right;display:flex;align-items:center;gap:8px">
-            <div>
-              <div style="font-size:13px" class="mono">$${fm(tx.amountUSD)}</div>
-              <div style="font-size:11px;color:var(--mt)">฿${fm(tx.amountTHB,0)}</div>
-            </div>
-            <span style="color:var(--dm)">›</span>
-          </div>
-        </div>
-      `).join('')}
+    <div class="card"><div class="fb"><div><div class="ct" style="color:var(--rd)">ค่าธรรมเนียม</div><div style="font-size:20px;font-weight:800;color:var(--rd)" class="mono">$${fm(st.tC)}</div><div style="font-size:12px;color:var(--mt)">≈ ฿${fm(st.cTHB,0)} · ${fm(st.tU>0?(st.tC/st.tU)*100:0,3)}%</div></div></div></div>
+
+    <div class="card"><div class="ct">รายการล่าสุด · กดเพื่อแก้ไข</div>
+    ${[...S.port].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5).map(tx=>`<div class="tx-row" onclick="editTx(${tx.id})"><div><div style="display:flex;gap:5px;align-items:center"><span class="badge b-bl">${fqS(tx.investType)}</span><span style="font-size:12px;color:var(--mt)">${fD(tx.date)}</span></div><div style="font-size:11px;color:var(--dm);margin-top:4px">${fm(tx.shares,4)} หุ้น @ $${fm(tx.vwraPrice)}</div></div><div style="text-align:right;display:flex;align-items:center;gap:8px"><div><div style="font-size:13px" class="mono">$${fm(tx.amountUSD)}</div><div style="font-size:11px;color:var(--mt)">฿${fm(tx.amountTHB,0)}</div></div><span style="color:var(--dm)">›</span></div></div>`).join('')}</div>`;
+}
+
+/* ── Log ── */
+function rLog(){
+  if(S.editTx)return rForm('แก้ไขรายการ',true);
+  return`
+    <button class="${S.showForm?'btn-g':'btn-p'}" onclick="toggleForm()" style="margin-bottom:14px">${S.showForm?'✕ ปิด':'＋ บันทึกการซื้อ VWRA'}</button>
+    ${S.showForm?rForm('เพิ่มรายการซื้อ',false):''}
+    ${S.port.length===0&&!S.showForm?'<div class="card" style="text-align:center;padding:40px;color:var(--dm)">ยังไม่มีรายการ</div>':''}
+    ${[...S.port].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(tx=>`<div class="card" style="margin-bottom:6px;cursor:pointer" onclick="editTx(${tx.id})"><div style="display:flex;justify-content:space-between"><div style="flex:1"><div style="display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap;align-items:center"><span class="badge b-gn">ซื้อ</span><span class="badge b-bl">${fqS(tx.investType)}</span><span style="font-size:12px;color:var(--mt)">${fD(tx.date)}</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;font-size:12px"><div><span style="color:var(--dm)">THB </span><span class="mono" style="font-weight:600">฿${fm(tx.amountTHB,0)}</span></div><div><span style="color:var(--dm)">USD </span><span class="mono" style="font-weight:600">$${fm(tx.amountUSD)}</span></div><div><span style="color:var(--dm)">Rate </span><span class="mono">${fm(tx.exchangeRate)}</span></div><div><span style="color:var(--dm)">VWRA </span><span class="mono">$${fm(tx.vwraPrice)}</span></div><div><span style="color:var(--dm)">หุ้น </span><span class="mono" style="color:var(--au)">${fm(tx.shares,4)}</span></div><div><span style="color:var(--dm)">คอม </span><span class="mono" style="color:var(--rd)">$${fm(tx.commission)}</span></div></div>${tx.note?`<div style="font-size:11px;color:var(--dm);margin-top:5px;font-style:italic">${esc(tx.note)}</div>`:''}</div><div style="display:flex;align-items:center;color:var(--dm);margin-left:8px">›</div></div></div>`).join('')}`;
+}
+
+/* ── Form ── */
+function rForm(title,isEdit){
+  const f=formData;
+  const thb=parseFloat(f.amountTHB)||0,rate=parseFloat(f.exchangeRate)||0,vp=parseFloat(f.vwraPrice)||0;
+  const usd=rate>0?thb/rate:0,sh=vp>0?usd/vp:0;
+  return`<div class="card fade" style="border-color:var(--ab)"><div class="ct" style="color:var(--au)">${title}</div>
+    <div style="margin-bottom:14px"><label class="inp-l">ประเภท</label><div style="display:flex;gap:4px;flex-wrap:wrap">${FREQ.map(o=>`<button class="fq ${f.investType===o.v?'on':''}" onclick="captureForm();formData.investType='${o.v}';render()">${o.l}</button>`).join('')}</div></div>
+    <div style="margin-bottom:10px"><label class="inp-l">วันที่</label><input type="date" value="${f.date||''}" class="inp" style="font-family:inherit" data-field="date"></div>
+    <div class="g2" style="margin-bottom:10px"><div><label class="inp-l">จำนวน (THB)</label><input type="number" step="any" placeholder="300000" value="${f.amountTHB||''}" class="inp" data-field="amountTHB"></div><div><label class="inp-l">เรท THB/USD</label><input type="number" step="any" placeholder="32.93" value="${f.exchangeRate||''}" class="inp" data-field="exchangeRate"></div></div>
+    <div class="g2" style="margin-bottom:10px"><div><label class="inp-l">VWRA.L (USD)</label><input type="number" step="any" placeholder="164.34" value="${f.vwraPrice||''}" class="inp" data-field="vwraPrice"></div><div><label class="inp-l">ค่าธรรมเนียม</label><input type="number" step="any" placeholder="4.56" value="${f.commission||''}" class="inp" data-field="commission"></div></div>
+    ${thb>0&&rate>0?`<div style="padding:10px 12px;background:var(--ad);border-radius:8px;margin-bottom:10px;font-size:13px"><div class="fb"><span style="color:var(--mt)">USD</span><span class="mono" style="color:var(--au)">$${fm(usd)}</span></div>${vp>0?`<div class="fb" style="margin-top:3px"><span style="color:var(--mt)">หุ้น</span><span class="mono" style="color:var(--gn)">${fm(sh,4)}</span></div>`:''}</div>`:''}
+    <div style="margin-bottom:12px"><label class="inp-l">หมายเหตุ</label><input type="text" placeholder="เช่น DCA เดือน เม.ย." value="${esc(f.note||'')}" class="inp" style="font-family:inherit" data-field="note"></div>
+    <div style="display:flex;gap:8px"><button class="btn-p" style="flex:2" onclick="saveForm(${isEdit})">✓ บันทึก</button><button class="btn-g" style="flex:1" onclick="cancelForm()">ยกเลิก</button></div>
+    ${isEdit?`<button class="btn-d" style="margin-top:8px" onclick="deleteTx(${S.editTx?.id})">ลบรายการนี้</button>`:''}
+  </div>`;
+}
+
+/* ── Settings ── */
+function rSet(){
+  const s=S.sett;
+  return`<div class="card"><div class="ct" style="color:var(--au)">แผน DCA</div>
+    <div style="margin-bottom:14px"><label class="inp-l">งบต่อเดือน (THB)</label><input type="number" value="${s.monthlyBudget}" class="inp" onchange="S.sett.monthlyBudget=parseFloat(this.value)||0;save();render()"></div>
+    <label class="inp-l">ความถี่หลัก</label><div class="g2" style="gap:6px">
+    ${[{v:'monthly',l:'รายเดือน',s:1},{v:'quarterly',l:'ไตรมาส',s:3},{v:'semiannual',l:'ครึ่งปี',s:6},{v:'annual',l:'รายปี',s:12}].map(o=>`<button style="padding:12px;border-radius:9px;text-align:left;border:1px solid ${s.frequency===o.v?'var(--ab)':'var(--bd)'};background:${s.frequency===o.v?'var(--ad)':'var(--s2)'};color:${s.frequency===o.v?'var(--au)':'var(--mt)'};cursor:pointer" onclick="S.sett.frequency='${o.v}';save();render()"><div style="font-size:13px;font-weight:700">${o.l}</div><div style="font-size:11px;margin-top:3px;opacity:.6">฿${fm(s.monthlyBudget*o.s,0)}/ครั้ง</div></button>`).join('')}</div></div>
+    <div class="card"><div class="ct">ข้อมูลกองทุน</div>${[['กองทุน','VWRA.L'],['ชื่อเต็ม','Vanguard FTSE All-World UCITS ETF'],['ตลาด','London Stock Exchange'],['โบรกเกอร์','Interactive Brokers'],['TER','0.22%']].map(([k,v],i)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;${i<4?'border-bottom:1px solid var(--bd)':''};font-size:13px"><span style="color:var(--mt)">${k}</span><span style="font-weight:600">${v}</span></div>`).join('')}</div>
+    <div class="card"><div class="ct">Real-time Settings</div>
+      <div class="fb" style="margin-bottom:8px"><span style="font-size:13px;color:var(--mt)">Refresh ทุก</span><span class="mono" style="color:var(--wh)">${REFRESH_MS/1000} วินาที</span></div>
+      <div class="fb" style="margin-bottom:8px"><span style="font-size:13px;color:var(--mt)">แหล่ง VWRA (cached)</span><span style="font-size:12px;color:var(--gn)">${S.cachedVwraAPI||'ยังไม่มี'}</span></div>
+      <div class="fb" style="margin-bottom:12px"><span style="font-size:13px;color:var(--mt)">แหล่ง Rate (cached)</span><span style="font-size:12px;color:var(--gn)">${S.cachedRateAPI||'ยังไม่มี'}</span></div>
+      <button class="btn-g" onclick="S.cachedRateAPI=null;S.cachedVwraAPI=null;LS.s('vc-rate',null);LS.s('vc-vwra',null);stopLive();startLive()">ล้าง cache แล้วสแกนใหม่</button>
     </div>
-  `;
+    <div class="card"><div class="ct">จัดการข้อมูล</div><div class="fb" style="margin-bottom:12px;font-size:13px"><span style="color:var(--mt)">รายการทั้งหมด</span><span class="mono" style="color:var(--wh)">${S.port.length}</span></div><button class="btn-d" onclick="if(confirm('ลบข้อมูลทั้งหมด?')){S.port=[];save();render()}">ลบข้อมูลทั้งหมด</button></div>`;
 }
 
-function renderLog() {
-  if (state.editTx) return renderForm('แก้ไขรายการ', state.editTx, true);
+/* ── Form Helpers ── */
+function captureForm(){['date','amountTHB','exchangeRate','vwraPrice','commission','note'].forEach(k=>{const el=document.querySelector(`[data-field="${k}"]`);if(el)formData[k]=el.value})}
+function toggleForm(){S.showForm=!S.showForm;if(S.showForm)formData={date:new Date().toISOString().split('T')[0],amountTHB:'',exchangeRate:S.price.rate||'',vwraPrice:'',commission:'',note:'',investType:'monthly'};render()}
+function cancelForm(){S.showForm=false;S.editTx=null;formData={};render()}
+function editTx(id){const tx=S.port.find(t=>t.id===id);if(tx){S.editTx={...tx};formData={date:tx.date,amountTHB:String(tx.amountTHB||''),exchangeRate:String(tx.exchangeRate||''),vwraPrice:String(tx.vwraPrice||''),commission:String(tx.commission||''),note:tx.note||'',investType:tx.investType||'monthly'};S.tab='log';render()}}
+function saveForm(isEdit){captureForm();const d=formData,thb=parseFloat(d.amountTHB)||0,rate=parseFloat(d.exchangeRate)||0,vp=parseFloat(d.vwraPrice)||0,com=parseFloat(d.commission)||0,u=rate>0?thb/rate:0,sh=vp>0?u/vp:0;const e={id:isEdit?S.editTx.id:Date.now(),type:'buy',date:d.date,amountTHB:thb,amountUSD:u,exchangeRate:rate,vwraPrice:vp,shares:sh,commission:com,note:d.note||'',investType:d.investType||'monthly'};if(isEdit)S.port=S.port.map(t=>t.id===e.id?e:t);else S.port.push(e);S.showForm=false;S.editTx=null;formData={};save();render()}
+function deleteTx(id){if(confirm('ลบรายการนี้?')){S.port=S.port.filter(t=>t.id!==id);S.editTx=null;formData={};save();render()}}
 
-  return `
-    <button class="${state.showForm?'btn-ghost':'btn-primary'}" onclick="toggleForm()" style="margin-bottom:14px">
-      ${state.showForm?'✕ ปิด':'＋ บันทึกการซื้อ VWRA'}
-    </button>
-
-    ${state.showForm?renderForm('เพิ่มรายการซื้อ', {
-      date: new Date().toISOString().split('T')[0],
-      amountTHB:'',exchangeRate:state.price.rate||'',vwraPrice:'',commission:'',note:'',investType:'monthly'
-    }, false):''}
-
-    ${state.port.length===0&&!state.showForm?'<div class="card" style="text-align:center;padding:40px;color:var(--dm)">ยังไม่มีรายการ</div>':''}
-
-    ${[...state.port].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(tx=>`
-      <div class="card" style="margin-bottom:6px;cursor:pointer;${state.editTx?.id===tx.id?'border-color:var(--ab)':''}" onclick="editTx(${tx.id})">
-        <div style="display:flex;justify-content:space-between">
-          <div style="flex:1">
-            <div style="display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap;align-items:center">
-              <span class="badge badge-gn">ซื้อ</span>
-              <span class="badge badge-bl">${fqS(tx.investType)}</span>
-              <span style="font-size:12px;color:var(--mt)">${fD(tx.date)}</span>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;font-size:12px">
-              <div><span style="color:var(--dm)">THB </span><span class="mono" style="font-weight:600">฿${fm(tx.amountTHB,0)}</span></div>
-              <div><span style="color:var(--dm)">USD </span><span class="mono" style="font-weight:600">$${fm(tx.amountUSD)}</span></div>
-              <div><span style="color:var(--dm)">Rate </span><span class="mono" style="font-weight:500">${fm(tx.exchangeRate)}</span></div>
-              <div><span style="color:var(--dm)">VWRA </span><span class="mono" style="font-weight:500">$${fm(tx.vwraPrice)}</span></div>
-              <div><span style="color:var(--dm)">หุ้น </span><span class="mono" style="color:var(--au)">${fm(tx.shares,4)}</span></div>
-              <div><span style="color:var(--dm)">คอม </span><span class="mono" style="color:var(--rd);font-weight:500">$${fm(tx.commission)}</span></div>
-            </div>
-            ${tx.note?`<div style="font-size:11px;color:var(--dm);margin-top:5px;font-style:italic">${esc(tx.note)}</div>`:''}
-          </div>
-          <div style="display:flex;align-items:center;color:var(--dm);margin-left:8px">›</div>
-        </div>
-      </div>
-    `).join('')}
-  `;
-}
-
-function renderForm(title, data, isEdit) {
-  const thb = parseFloat(data.amountTHB)||0;
-  const rate = parseFloat(data.exchangeRate)||0;
-  const vp = parseFloat(data.vwraPrice)||0;
-  const usd = rate>0?thb/rate:0;
-  const sh = vp>0?usd/vp:0;
-
-  return `
-    <div class="card fade" style="border-color:var(--ab)">
-      <div class="card-title" style="color:var(--au)">${title}</div>
-
-      <div style="margin-bottom:14px">
-        <label class="inp-label">ประเภท</label>
-        <div style="display:flex;gap:4px;flex-wrap:wrap">
-          ${FREQ.map(o=>`<button class="freq-btn ${data.investType===o.v?'active':''}" onclick="setFormField('investType','${o.v}')">${o.l}</button>`).join('')}
-        </div>
-      </div>
-
-      <div style="margin-bottom:10px"><label class="inp-label">วันที่</label><input type="date" value="${data.date||''}" class="inp" style="font-family:inherit" onchange="setFormField('date',this.value)"></div>
-
-      <div class="grid-2" style="margin-bottom:10px">
-        <div><label class="inp-label">จำนวน (THB)</label><input type="number" step="any" placeholder="300000" value="${data.amountTHB||''}" class="inp" oninput="setFormField('amountTHB',this.value)"></div>
-        <div><label class="inp-label">เรท THB/USD</label><input type="number" step="any" placeholder="32.93" value="${data.exchangeRate||''}" class="inp" oninput="setFormField('exchangeRate',this.value)"></div>
-      </div>
-      <div class="grid-2" style="margin-bottom:10px">
-        <div><label class="inp-label">VWRA.L (USD)</label><input type="number" step="any" placeholder="164.34" value="${data.vwraPrice||''}" class="inp" oninput="setFormField('vwraPrice',this.value)"></div>
-        <div><label class="inp-label">ค่าธรรมเนียม</label><input type="number" step="any" placeholder="4.56" value="${data.commission||''}" class="inp" oninput="setFormField('commission',this.value)"></div>
-      </div>
-
-      ${thb>0&&rate>0?`
-      <div style="padding:10px 12px;background:var(--ad);border-radius:8px;margin-bottom:10px;font-size:13px">
-        <div style="display:flex;justify-content:space-between"><span style="color:var(--mt)">USD</span><span class="mono" style="color:var(--au)">$${fm(usd)}</span></div>
-        ${vp>0?`<div style="display:flex;justify-content:space-between;margin-top:3px"><span style="color:var(--mt)">หุ้น</span><span class="mono" style="color:var(--gn)">${fm(sh,4)}</span></div>`:''}
-      </div>`:''}
-
-      <div style="margin-bottom:12px"><label class="inp-label">หมายเหตุ</label><input type="text" placeholder="เช่น DCA เดือน เม.ย." value="${esc(data.note||'')}" class="inp" style="font-family:inherit" oninput="setFormField('note',this.value)"></div>
-
-      <div style="display:flex;gap:8px">
-        <button class="btn-primary" style="flex:2" onclick="saveForm(${isEdit})">✓ บันทึก</button>
-        <button class="btn-ghost" style="flex:1" onclick="cancelForm()">ยกเลิก</button>
-      </div>
-
-      ${isEdit?`<button class="btn-danger" style="margin-top:8px" onclick="deleteTx(${data.id})">ลบรายการนี้</button>`:''}
-    </div>
-  `;
-}
-
-function renderSet() {
-  const s = state.sett;
-  return `
-    <div class="card">
-      <div class="card-title" style="color:var(--au)">แผน DCA</div>
-      <div style="margin-bottom:14px"><label class="inp-label">งบต่อเดือน (THB)</label><input type="number" value="${s.monthlyBudget}" class="inp" onchange="state.sett.monthlyBudget=parseFloat(this.value)||0;save();render()"></div>
-      <label class="inp-label">ความถี่หลัก</label>
-      <div class="grid-2" style="gap:6px">
-        ${[{v:'monthly',l:'รายเดือน',s:1},{v:'quarterly',l:'ไตรมาส',s:3},{v:'semiannual',l:'ครึ่งปี',s:6},{v:'annual',l:'รายปี',s:12}].map(o=>`
-          <button style="padding:12px;border-radius:9px;text-align:left;border:1px solid ${s.frequency===o.v?'var(--ab)':'var(--bd)'};background:${s.frequency===o.v?'var(--ad)':'var(--s2)'};color:${s.frequency===o.v?'var(--au)':'var(--mt)'};cursor:pointer" onclick="state.sett.frequency='${o.v}';save();render()">
-            <div style="font-size:13px;font-weight:700">${o.l}</div>
-            <div style="font-size:11px;margin-top:3px;opacity:0.6">฿${fm(s.monthlyBudget*o.s,0)}/ครั้ง</div>
-          </button>`).join('')}
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">ข้อมูลกองทุน</div>
-      ${[['กองทุน','VWRA.L'],['ชื่อเต็ม','Vanguard FTSE All-World UCITS ETF'],['ตลาด','London Stock Exchange'],['โบรกเกอร์','Interactive Brokers'],['TER','0.22%']].map(([k,v],i)=>`
-        <div style="display:flex;justify-content:space-between;padding:6px 0;${i<4?'border-bottom:1px solid var(--bd)':''};font-size:13px">
-          <span style="color:var(--mt)">${k}</span><span style="font-weight:600">${v}</span>
-        </div>`).join('')}
-    </div>
-
-    <div class="card">
-      <div class="card-title">จัดการข้อมูล</div>
-      <div class="flex-between" style="margin-bottom:12px;font-size:13px">
-        <span style="color:var(--mt)">รายการทั้งหมด</span><span class="mono" style="color:var(--wh)">${state.port.length}</span>
-      </div>
-      <button class="btn-danger" onclick="if(confirm('ลบข้อมูลทั้งหมด?')){state.port=[];save();render()}">ลบข้อมูลทั้งหมด</button>
-    </div>
-
-    <div class="card" style="border-color:var(--ab)">
-      <div class="card-title" style="color:var(--au)">💡 เคล็ดลับ</div>
-      <div style="font-size:12px;color:var(--mt);line-height:1.8">
-        ${['DCA สม่ำเสมอ — time in market > timing the market','แลกเงินตอนบาทแข็ง ได้ USD มากขึ้น','IBKR ค่า FX min $2 — แลกก้อนใหญ่คุ้มกว่า','Add to Home Screen เพื่อใช้เป็นแอป'].map(t=>`<div style="display:flex;gap:6px;margin-bottom:4px"><span style="color:var(--au);font-size:8px;margin-top:5px">◆</span><span>${t}</span></div>`).join('')}
-      </div>
-    </div>
-  `;
-}
-
-/* ── Helpers ── */
-function esc(s) { const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
-
-let formData = {};
-function toggleForm() { state.showForm=!state.showForm; formData={}; render(); }
-function cancelForm() { state.showForm=false; state.editTx=null; formData={}; render(); }
-
-function editTx(id) {
-  const tx = state.port.find(t=>t.id===id);
-  if (tx) { state.editTx = {...tx}; formData = {...tx}; state.tab='log'; render(); }
-}
-
-function setFormField(k,v) {
-  if (state.editTx) state.editTx[k]=v;
-  else formData[k]=v;
-}
-
-function setPriceManual(type, val) {
-  const v = parseFloat(val)||0;
-  if (type==='vwra') { state.price.vwra=v; state.price.vSrc=v>0?'Manual':''; }
-  else { state.price.rate=v; state.price.rSrc=v>0?'Manual':''; }
-  save(); render();
-}
-
-function saveForm(isEdit) {
-  const d = isEdit ? state.editTx : formData;
-  const thb=parseFloat(d.amountTHB)||0, rate=parseFloat(d.exchangeRate)||0;
-  const vp=parseFloat(d.vwraPrice)||0, com=parseFloat(d.commission)||0;
-  const usd=rate>0?thb/rate:0, sh=vp>0?usd/vp:0;
-
-  const entry = {
-    id: isEdit?d.id:Date.now(), type:'buy', date:d.date,
-    amountTHB:thb, amountUSD:usd, exchangeRate:rate, vwraPrice:vp,
-    shares:sh, commission:com, note:d.note||'', investType:d.investType||'monthly',
-  };
-
-  if (isEdit) state.port = state.port.map(t=>t.id===entry.id?entry:t);
-  else state.port.push(entry);
-
-  state.showForm=false; state.editTx=null; formData={};
-  save(); render();
-}
-
-function deleteTx(id) {
-  if (confirm('ลบรายการนี้?')) {
-    state.port = state.port.filter(t=>t.id!==id);
-    state.editTx=null; save(); render();
-  }
-}
-
-// ── Init ──
 init();
 </script>
 </body>
