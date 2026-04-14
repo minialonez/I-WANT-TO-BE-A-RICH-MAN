@@ -198,13 +198,17 @@ function updatePriceUI(){
   // Update value + P&L
   if(el('val-usd'))el('val-usd').textContent='$'+fm(st.cU);
   if(el('val-thb')&&st.cT!=null)el('val-thb').textContent='≈ ฿'+fm(st.cT,0);
-  if(el('pl-badge')&&st.pP!=null){el('pl-badge').textContent=(st.pP>=0?'+':'')+fm(st.pP,1)+'%';el('pl-badge').className='badge '+(st.pP>=0?'b-gn':'b-rd')}
+  if(el('pl-badge')&&st.pP!=null){el('pl-badge').textContent='USD '+(st.pP>=0?'+':'')+fm(st.pP,1)+'%';el('pl-badge').className='badge '+(st.pP>=0?'b-gn':'b-rd')}
+  if(el('pl-badge-thb')&&st.realPct!=null){el('pl-badge-thb').textContent='THB '+(st.realPct>=0?'+':'')+fm(st.realPct,1)+'%';el('pl-badge-thb').className='badge '+(st.realTHB>=0?'b-gn':'b-rd')}
   if(el('pl-usd')&&st.pU!=null){el('pl-usd').textContent=(st.pU>=0?'+':'')+fm(st.pU);el('pl-usd').style.color=st.pU>=0?'var(--gn)':'var(--rd)'}
-  if(el('pl-thb')&&st.pT!=null){el('pl-thb').textContent=(st.pT>=0?'+':'')+'฿'+fm(st.pT,0);el('pl-thb').style.color=st.pT>=0?'var(--gn)':'var(--rd)'}
+  if(el('real-thb')&&st.realTHB!=null){el('real-thb').textContent=(st.realTHB>=0?'+':'')+'฿'+fm(st.realTHB,0);el('real-thb').style.color=st.realTHB>=0?'var(--gn)':'var(--rd)'}
+  if(el('real-pct')&&st.realPct!=null){el('real-pct').textContent=(st.realPct>=0?'+':'')+fm(st.realPct,1)+'% จากเงินลงทุน ฿'+fm(st.tT,0);el('real-pct').style.color=st.realPct>=0?'var(--gn)':'var(--rd)'}
+  if(el('inv-thb')&&st.invTHB!=null){el('inv-thb').textContent=(st.invTHB>=0?'+':'')+'฿'+fm(st.invTHB,0);el('inv-thb').style.color=st.invTHB>=0?'var(--gn)':'var(--rd)'}
+  if(el('fx-val')&&st.fxI!=null){el('fx-val').textContent=(st.fxI>=0?'+':'')+'฿'+fm(st.fxI,0)}
+  if(el('real-thb2')&&st.realTHB!=null){el('real-thb2').textContent=(st.realTHB>=0?'+':'')+'฿'+fm(st.realTHB,0);el('real-thb2').style.color=st.realTHB>=0?'var(--gn)':'var(--rd)'}
   if(el('pl-pct')&&st.pP!=null){el('pl-pct').textContent=(st.pP>=0?'+':'')+fm(st.pP,1)+'%';el('pl-pct').style.color=st.pP>=0?'var(--gn)':'var(--rd)'}
   if(el('pr-now'))el('pr-now').textContent='$'+fm(p.vwra);
   if(el('pl-per'))el('pl-per').textContent=(p.vwra-st.aP>=0?'+':'')+'$'+fm(p.vwra-st.aP);
-  if(el('fx-val')&&st.fxI!=null)el('fx-val').textContent=(st.fxI>=0?'+':'')+'฿'+fm(st.fxI,0);
 }
 
 /* ── Calculation ── */
@@ -217,14 +221,17 @@ function calc(){
   const live=vwra>0;
   const cU=live?tS*vwra:null;
   const cT=cU!=null&&rate>0?cU*rate:null;
+  // USD P&L = กำไรจากการลงทุน (ไม่รวม FX)
   const pU=cU!=null?cU-tU:null;
-  // THB P&L = กำไร USD × เรทปัจจุบัน
-  const pT=pU!=null&&rate>0?pU*rate:null;
-  // FX Impact = มูลค่าปัจจุบัน × (เรทปัจจุบัน - เรทเฉลี่ยตอนซื้อ)
-  // = ถ้าเรทไม่เปลี่ยน พอร์ตจะมีค่ากี่บาท vs ค่าจริง
-  const fxI=cU!=null&&rate>0&&aR>0?cU*(rate-aR):null;
   const pP=cU!=null&&tU>0?(pU/tU)*100:null;
-  return{tT,tU,tS,aP,aR,cU,cT,pU,pT,pP,fxI,tC,cTHB:tC*(rate||aR||33),cnt:b.length,live};
+  // กำไรจากหุ้นแปลงเป็น THB = USD P&L × เรทปัจจุบัน
+  const invTHB=pU!=null&&rate>0?pU*rate:null;
+  // ผลกระทบค่าเงิน = มูลค่าพอร์ต × (เรทปัจจุบัน − เรทตอนซื้อ)
+  const fxI=cU!=null&&rate>0&&aR>0?cU*(rate-aR):null;
+  // กำไรจริง THB = มูลค่าปัจจุบัน THB − เงินลงทุน THB (= invTHB + fxI)
+  const realTHB=cT!=null?cT-tT:null;
+  const realPct=realTHB!=null&&tT>0?(realTHB/tT)*100:null;
+  return{tT,tU,tS,aP,aR,cU,cT,pU,pP,invTHB,fxI,realTHB,realPct,tC,cTHB:tC*(rate||aR||33),cnt:b.length,live};
 }
 
 /* ══════════════════
@@ -286,19 +293,48 @@ function rDash(st){
       ${p.rate>0?`<div id="val-thb" style="font-size:14px;color:var(--mt);margin-top:4px" class="mono">≈ ฿${fm(st.cT,0)}</div>`:''}`
       :`<div style="font-size:13px;color:var(--dm)">กรอกราคาด้านบนหรือรอ LIVE</div>`}
       <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
-        ${st.live?`<span id="pl-badge" class="badge ${plC?'b-gn':'b-rd'}">${plC?'+':''}${fm(st.pP,1)}%</span>`:''}<span class="badge b-au">${fm(st.tS,4)} หุ้น</span>
+        ${st.live?`<span id="pl-badge" class="badge ${plC?'b-gn':'b-rd'}">USD ${plC?'+':''}${fm(st.pP,1)}%</span>`:''}
+        ${st.live&&st.realPct!=null?`<span id="pl-badge-thb" class="badge ${st.realTHB>=0?'b-gn':'b-rd'}">THB ${st.realPct>=0?'+':''}${fm(st.realPct,1)}%</span>`:''} 
+        <span class="badge b-au">${fm(st.tS,4)} หุ้น</span>
       </div>
     </div>
 
     <!-- P&L -->
     ${st.live?`<div class="card" style="border-color:${plC?'rgba(63,185,80,.15)':'rgba(248,81,73,.15)'}">
       <div class="ct" style="color:${plC?'var(--gn)':'var(--rd)'}">กำไร / ขาดทุน</div>
-      <div class="g2" style="gap:14px">
-        <div><div style="font-size:10px;color:var(--dm)">USD</div><div id="pl-usd" style="font-size:22px;font-weight:800;color:${plC?'var(--gn)':'var(--rd)'};margin-top:2px" class="mono">${plC?'+':''}${fm(st.pU)}</div></div>
-        ${p.rate>0?`<div><div style="font-size:10px;color:var(--dm)">THB (กำไร USD × เรทปัจจุบัน)</div><div id="pl-thb" style="font-size:22px;font-weight:800;color:${st.pT>=0?'var(--gn)':'var(--rd)'};margin-top:2px" class="mono">${st.pT>=0?'+':''}฿${fm(st.pT,0)}</div></div>`:''}
+
+      <!-- Main: True THB P&L -->
+      ${p.rate>0&&st.realTHB!=null?`<div style="margin-bottom:14px">
+        <div style="font-size:10px;color:var(--dm);margin-bottom:2px">กำไรจริง (THB) — รวมผลค่าเงิน</div>
+        <div id="real-thb" style="font-size:28px;font-weight:800;color:${st.realTHB>=0?'var(--gn)':'var(--rd)'}" class="mono">${st.realTHB>=0?'+':''}฿${fm(st.realTHB,0)}</div>
+        <div id="real-pct" style="font-size:13px;color:${st.realPct>=0?'var(--gn)':'var(--rd)'};margin-top:2px" class="mono">${st.realPct>=0?'+':''}${fm(st.realPct,1)}% จากเงินลงทุน ฿${fm(st.tT,0)}</div>
+      </div>`:''} 
+
+      <!-- USD P&L -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;color:var(--dm);margin-bottom:2px">กำไรจากหุ้น (USD)</div>
+        <div id="pl-usd" style="font-size:22px;font-weight:800;color:${plC?'var(--gn)':'var(--rd)'}" class="mono">${plC?'+':''}$${fm(st.pU)}</div>
       </div>
-      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding-top:12px;border-top:1px solid var(--bd)">
-        <div><div style="font-size:9px;color:var(--dm)">%P&L</div><div id="pl-pct" style="font-size:15px;font-weight:700;margin-top:2px;color:${plC?'var(--gn)':'var(--rd)'}" class="mono">${plC?'+':''}${fm(st.pP,1)}%</div></div>
+
+      <!-- Breakdown -->
+      ${p.rate>0?`<div style="padding:12px;background:var(--s2);border-radius:10px;margin-bottom:12px">
+        <div style="font-size:10px;color:var(--mt);margin-bottom:8px;font-weight:600">รายละเอียดกำไร THB</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--bd)">
+          <span style="color:var(--mt)">① กำไรจากหุ้น (USD P&L × เรท ${fm(p.rate)})</span>
+          <span id="inv-thb" class="mono" style="color:${st.invTHB>=0?'var(--gn)':'var(--rd)'}">${st.invTHB>=0?'+':''}฿${fm(st.invTHB,0)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--bd)">
+          <span style="color:var(--mt)">② ผลกระทบค่าเงิน (เรท ${fm(st.aR)}→${fm(p.rate)})</span>
+          <span id="fx-val" class="mono" style="color:${st.fxI>=0?'var(--gn)':'var(--bl)'}">${st.fxI>=0?'+':''}฿${fm(st.fxI,0)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0;font-weight:700">
+          <span style="color:var(--wh)">กำไรจริง ① + ②</span>
+          <span id="real-thb2" class="mono" style="color:${st.realTHB>=0?'var(--gn)':'var(--rd)'}">${st.realTHB>=0?'+':''}฿${fm(st.realTHB,0)}</span>
+        </div>
+      </div>`:''} 
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding-top:12px;border-top:1px solid var(--bd)">
+        <div><div style="font-size:9px;color:var(--dm)">%P&L (USD)</div><div id="pl-pct" style="font-size:15px;font-weight:700;margin-top:2px;color:${plC?'var(--gn)':'var(--rd)'}" class="mono">${plC?'+':''}${fm(st.pP,1)}%</div></div>
         <div><div style="font-size:9px;color:var(--dm)">ราคาตอนนี้</div><div id="pr-now" style="font-size:15px;font-weight:700;margin-top:2px" class="mono">$${fm(p.vwra)}</div></div>
         <div><div style="font-size:9px;color:var(--dm)">ต้นทุนเฉลี่ย</div><div style="font-size:15px;font-weight:700;margin-top:2px" class="mono">$${fm(st.aP)}</div></div>
       </div>
@@ -306,13 +342,7 @@ function rDash(st){
         <span style="color:${plC?'var(--gn)':'var(--rd)'}">กำไร/ขาดทุนต่อหุ้น</span>
         <span id="pl-per" class="mono" style="color:${plC?'var(--gn)':'var(--rd)'}">${(p.vwra-st.aP)>=0?'+':''}$${fm(p.vwra-st.aP)}</span>
       </div>
-      ${st.fxI!=null&&p.rate>0?`<div style="margin-top:6px;padding:8px 12px;background:var(--bld);border-radius:8px;font-size:12px">
-        <div style="display:flex;justify-content:space-between;color:var(--bl)">
-          <span>ผลกระทบค่าเงิน (FX)</span>
-          <span id="fx-val" class="mono">${st.fxI>=0?'+':''}฿${fm(st.fxI,0)}</span>
-        </div>
-        <div style="font-size:10px;color:var(--dm);margin-top:4px">สูตร: มูลค่าพอร์ต × (เรทปัจจุบัน ${fm(p.rate)} − เรทตอนซื้อ ${fm(st.aR)})</div>
-      </div>`:''}</div>`:''
+    </div>`:''
     }
 
     <div class="g2" style="margin-bottom:10px">
