@@ -102,8 +102,16 @@ const VWRA_APIS=[
   {id:'proxy2',n:'corsproxy+Yahoo',u:'https://corsproxy.io/?'+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/VWRA.L?interval=1d&range=1d'),p:d=>d.chart?.result?.[0]?.meta?.regularMarketPrice},
 ];
 
-async function tryAPI(api,log){
-  const r=await fetch(api.u,{signal:AbortSignal.timeout(5000)});
+// Fetch with timeout (compatible with all browsers)
+function fetchTimeout(url, ms=6000){
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error('Timeout')),ms);
+    fetch(url,{cache:'no-store'}).then(r=>{clearTimeout(timer);resolve(r)}).catch(e=>{clearTimeout(timer);reject(e)});
+  });
+}
+
+async function tryAPI(api){
+  const r=await fetchTimeout(api.u);
   if(!r.ok)throw new Error(`HTTP ${r.status}`);
   const d=await r.json();
   const v=api.p(d);
@@ -172,11 +180,29 @@ async function fetchFull(){
   save();render();
 }
 
+let refreshCount=0;
+let lastError='';
+
 function startLive(){
+  stopLive();
+  refreshCount=0;
   fetchFull().then(()=>{
     if(S.price.live){
       refreshTimer=setInterval(async()=>{
-        try{await fetchFast();updatePriceUI()}catch{}
+        refreshCount++;
+        try{
+          const before={v:S.price.vwra,r:S.price.rate};
+          await fetchFast();
+          const changed=(S.price.vwra!==before.v||S.price.rate!==before.r);
+          lastError='';
+          updatePriceUI(changed);
+        }catch(e){
+          lastError=e.message;
+          // Still update time display so user knows timer is running
+          const el=id=>document.getElementById(id);
+          if(el('hdr-time'))el('hdr-time').textContent=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+          if(el('refresh-status'))el('refresh-status').textContent=`#${refreshCount} err: ${e.message}`;
+        }
       },REFRESH_MS);
     }
   });
@@ -184,7 +210,7 @@ function startLive(){
 function stopLive(){if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null}}
 
 // Lightweight UI update (no full re-render to preserve form state)
-function updatePriceUI(){
+function updatePriceUI(changed){
   const p=S.price;
   const st=calc();
   const el=id=>document.getElementById(id);
@@ -192,15 +218,23 @@ function updatePriceUI(){
   if(el('hdr-vwra'))el('hdr-vwra').textContent='$'+fm(p.vwra);
   if(el('hdr-rate'))el('hdr-rate').textContent=fm(p.rate);
   if(el('hdr-time'))el('hdr-time').textContent=p.time?p.time.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'';
-  if(el('inp-vwra'))el('inp-vwra').value=p.vwra||'';
-  if(el('inp-rate'))el('inp-rate').value=p.rate||'';
+  if(el('refresh-status'))el('refresh-status').textContent=`#${refreshCount} ${changed?'◆ อัปเดต!':'· ไม่มีเปลี่ยนแปลง'}`;
+  if(el('inp-vwra')&&document.activeElement!==el('inp-vwra'))el('inp-vwra').value=p.vwra||'';
+  if(el('inp-rate')&&document.activeElement!==el('inp-rate'))el('inp-rate').value=p.rate||'';
+
+  // Flash effect on change
+  if(changed){
+    ['val-usd','real-thb','pl-usd'].forEach(id=>{
+      const e=el(id);if(e){e.style.transition='background 0.3s';e.style.background='rgba(63,185,80,0.2)';setTimeout(()=>{e.style.background='transparent'},800)}
+    });
+  }
 
   // Update value + P&L
   if(el('val-usd'))el('val-usd').textContent='$'+fm(st.cU);
   if(el('val-thb')&&st.cT!=null)el('val-thb').textContent='≈ ฿'+fm(st.cT,0);
   if(el('pl-badge')&&st.pP!=null){el('pl-badge').textContent='USD '+(st.pP>=0?'+':'')+fm(st.pP,1)+'%';el('pl-badge').className='badge '+(st.pP>=0?'b-gn':'b-rd')}
   if(el('pl-badge-thb')&&st.realPct!=null){el('pl-badge-thb').textContent='THB '+(st.realPct>=0?'+':'')+fm(st.realPct,1)+'%';el('pl-badge-thb').className='badge '+(st.realTHB>=0?'b-gn':'b-rd')}
-  if(el('pl-usd')&&st.pU!=null){el('pl-usd').textContent=(st.pU>=0?'+':'')+fm(st.pU);el('pl-usd').style.color=st.pU>=0?'var(--gn)':'var(--rd)'}
+  if(el('pl-usd')&&st.pU!=null){el('pl-usd').textContent=(st.pU>=0?'+':'')+'$'+fm(st.pU);el('pl-usd').style.color=st.pU>=0?'var(--gn)':'var(--rd)'}
   if(el('real-thb')&&st.realTHB!=null){el('real-thb').textContent=(st.realTHB>=0?'+':'')+'฿'+fm(st.realTHB,0);el('real-thb').style.color=st.realTHB>=0?'var(--gn)':'var(--rd)'}
   if(el('real-pct')&&st.realPct!=null){el('real-pct').textContent=(st.realPct>=0?'+':'')+fm(st.realPct,1)+'% จากเงินลงทุน ฿'+fm(st.tT,0);el('real-pct').style.color=st.realPct>=0?'var(--gn)':'var(--rd)'}
   if(el('inv-thb')&&st.invTHB!=null){el('inv-thb').textContent=(st.invTHB>=0?'+':'')+'฿'+fm(st.invTHB,0);el('inv-thb').style.color=st.invTHB>=0?'var(--gn)':'var(--rd)'}
@@ -266,7 +300,7 @@ function rDash(st){
       <div class="fb" style="margin-bottom:10px">
         <div>
           <div class="ct" style="color:var(--au);margin-bottom:4px">◆ ราคา REAL-TIME</div>
-          ${p.live?`<div style="font-size:10px;color:var(--dm)"><span class="live-dot"></span>LIVE ทุก ${REFRESH_MS/1000}s · <span id="hdr-time">${p.time?p.time.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}</span></div>`:''}
+          ${p.live?`<div style="font-size:10px;color:var(--dm)"><span class="live-dot"></span>LIVE ทุก ${REFRESH_MS/1000}s · <span id="hdr-time">${p.time?p.time.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}</span> · <span id="refresh-status" style="color:var(--mt)"></span></div>`:''}
         </div>
         <button onclick="stopLive();fetchFull().then(()=>{if(S.price.live)refreshTimer=setInterval(async()=>{try{await fetchFast();updatePriceUI()}catch{}},REFRESH_MS)})" ${p.loading?'disabled':''} style="background:${p.loading?'var(--ad)':'linear-gradient(135deg,var(--au),#b8922e)'};padding:6px 14px;border-radius:8px;color:${p.loading?'var(--mt)':'#000'};font-size:11px;font-weight:700">
           ${p.loading?'โหลด...':'↻ สแกนใหม่'}
