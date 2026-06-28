@@ -59,6 +59,16 @@ const SEED=[
   {id:2,type:'buy',date:'2026-04-02',amountTHB:300000,amountUSD:9129.99,exchangeRate:32.86,vwraPrice:164.34,shares:55.5555,commission:4.56,note:'DCA ครั้งที่ 2',investType:'monthly'},
 ];
 
+/* ── ปันผล reinvest (กอง Accumulating) ──
+   กอง Acc ไม่จ่ายปันผลออกมา แต่เอาไป reinvest ในราคา → "มองไม่เห็น"
+   เก็บปันผลต่อหุ้น (เทียบหน่วย VWRA, USD) ของแต่ละ ex-date ที่ผ่านมา
+   ⚠️ ตัวเลข = ประมาณการ (อิงปันผลจริงของกองแฝด VWRD) ไม่ใช่เลขเป๊ะที่กองรายงาน
+   Claude อัปเดต/เพิ่มแถวให้ทุกไตรมาสที่จ่ายจริง */
+const DIVIDENDS=[
+  {ticker:'VWRA.L',exDate:'2026-06-18',perShare:1.49,note:'ไตรมาส มิ.ย. (ก้อนใหญ่สุดของปี) — ประมาณจาก VWRD $0.91'},
+  // ไตรมาสถัดไป (จ่าย 1 ต.ค.) จะเพิ่มที่นี่
+];
+
 /* ── State ── */
 let S={
   tab:'dash',port:[],sett:{monthlyBudget:50000,frequency:'monthly'},
@@ -243,6 +253,11 @@ function updatePriceUI(changed){
   if(el('pl-pct')&&st.pP!=null){el('pl-pct').textContent=(st.pP>=0?'+':'')+fm(st.pP,1)+'%';el('pl-pct').style.color=st.pP>=0?'var(--gn)':'var(--rd)'}
   if(el('pr-now'))el('pr-now').textContent='$'+fm(p.vwra);
   if(el('pl-per'))el('pl-per').textContent=(p.vwra-st.aP>=0?'+':'')+'$'+fm(p.vwra-st.aP);
+
+  // ── ปันผล reinvest (กอง Acc) ──
+  if(el('div-price-only')&&st.priceOnlyUsd!=null){el('div-price-only').textContent=(st.priceOnlyUsd>=0?'+':'')+'$'+fm(st.priceOnlyUsd);el('div-price-only').style.color=st.priceOnlyUsd>=0?'var(--gn)':'var(--rd)'}
+  if(el('div-acc-usd')&&st.accDivUsd!=null)el('div-acc-usd').textContent='+$'+fm(st.accDivUsd);
+  if(el('div-acc-thb')&&st.accDivThb!=null)el('div-acc-thb').textContent='≈ ฿'+fm(st.accDivThb,0);
 }
 
 /* ── Calculation ── */
@@ -265,7 +280,20 @@ function calc(){
   // กำไรจริง THB = มูลค่าปัจจุบัน THB − เงินลงทุน THB (= invTHB + fxI)
   const realTHB=cT!=null?cT-tT:null;
   const realPct=realTHB!=null&&tT>0?(realTHB/tT)*100:null;
-  return{tT,tU,tS,aP,aR,cU,cT,pU,pP,invTHB,fxI,realTHB,realPct,tC,cTHB:tC*(rate||aR||33),cnt:b.length,live};
+
+  // ── ปันผล reinvest สะสม (กอง Acc) ──
+  // Σ (ปันผลต่อหุ้นแต่ละ ex-date × จำนวนหุ้นที่ถือ ณ วันนั้น)
+  let accDivUsd=0;
+  DIVIDENDS.forEach(dv=>{
+    let sh=0;
+    b.forEach(tx=>{if((tx.date||'')<=dv.exDate)sh+=tx.shares||0});
+    if(sh>0)accDivUsd+=dv.perShare*sh;
+  });
+  const accDivThb=rate>0?accDivUsd*rate:null;
+  // แยกกำไรหุ้น (USD): ราคาขึ้นล้วน vs ปันผล reinvest
+  const priceOnlyUsd=pU!=null?pU-accDivUsd:null;
+
+  return{tT,tU,tS,aP,aR,cU,cT,pU,pP,invTHB,fxI,realTHB,realPct,tC,cTHB:tC*(rate||aR||33),cnt:b.length,live,accDivUsd,accDivThb,priceOnlyUsd};
 }
 
 /* ══════════════════
@@ -379,6 +407,24 @@ function rDash(st){
     </div>`:''
     }
 
+    <!-- ◆ เครื่องยนต์ที่มองไม่เห็น: ปันผล reinvest (กอง Acc) -->
+    ${st.live&&st.accDivUsd!=null?`<div class="card" style="border-color:var(--ab)">
+      <div class="ct" style="color:var(--au)">◆ เครื่องยนต์ที่มองไม่เห็น — ปันผล reinvest</div>
+      <div style="font-size:10px;color:var(--dm);margin-bottom:10px">แยก "กำไรจากหุ้น (USD)" ออกเป็น 2 ส่วน</div>
+      <div style="padding:12px;background:var(--s2);border-radius:10px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--bd)">
+          <span style="color:var(--mt)">ราคาหุ้นขึ้นล้วน</span>
+          <span id="div-price-only" class="mono" style="color:${st.priceOnlyUsd>=0?'var(--gn)':'var(--rd)'}">${st.priceOnlyUsd>=0?'+':''}$${fm(st.priceOnlyUsd)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0 2px">
+          <span style="color:var(--au);font-weight:600">ปันผล reinvest (สะสม)</span>
+          <span id="div-acc-usd" class="mono" style="color:var(--au)">+$${fm(st.accDivUsd)}</span>
+        </div>
+        ${st.accDivThb!=null?`<div style="display:flex;justify-content:flex-end;font-size:11px;color:var(--dm)"><span id="div-acc-thb" class="mono">≈ ฿${fm(st.accDivThb,0)}</span></div>`:''}
+      </div>
+      <div style="font-size:10px;color:var(--dm);line-height:1.5">ปันผลจากหุ้น ~3,600 ตัวในกองถูก reinvest อัตโนมัติ (กอง Acc) จึง "มองไม่เห็น" จนกว่าจะขาย — เป็น <b style="color:var(--mt)">ส่วนหนึ่ง</b> ของกำไร ไม่ใช่กำไรเพิ่ม · ตัวเลข <b style="color:var(--mt)">ประมาณการ</b> (อิง VWRD) อัปเดตทุกไตรมาส</div>
+    </div>`:''}
+
     <div class="g2" style="margin-bottom:10px">
       ${[['ลงทุนรวม (THB)',`฿${fm(st.tT,0)}`],['ลงทุนรวม (USD)',`$${fm(st.tU)}`],['ต้นทุนเฉลี่ย',`$${fm(st.aP)}`],['เรทเฉลี่ย',fm(st.aR)]].map(([l,v])=>`<div class="card" style="margin-bottom:0;padding:12px 14px"><div style="font-size:9px;color:var(--dm);margin-bottom:4px">${l}</div><div style="font-size:15px;font-weight:700;color:var(--wh)" class="mono">${v}</div></div>`).join('')}
     </div>
@@ -429,6 +475,11 @@ function rSet(){
       <div class="fb" style="margin-bottom:8px"><span style="font-size:13px;color:var(--mt)">แหล่ง VWRA (cached)</span><span style="font-size:12px;color:var(--gn)">${S.cachedVwraAPI||'ยังไม่มี'}</span></div>
       <div class="fb" style="margin-bottom:12px"><span style="font-size:13px;color:var(--mt)">แหล่ง Rate (cached)</span><span style="font-size:12px;color:var(--gn)">${S.cachedRateAPI||'ยังไม่มี'}</span></div>
       <button class="btn-g" onclick="S.cachedRateAPI=null;S.cachedVwraAPI=null;LS.s('vc-rate',null);LS.s('vc-vwra',null);stopLive();startLive()">ล้าง cache แล้วสแกนใหม่</button>
+    </div>
+    <div class="card"><div class="ct">ปันผล reinvest (กอง Acc)</div>
+      <div style="font-size:11px;color:var(--mt);line-height:1.6;margin-bottom:10px">VWRA เป็นกองสะสม — ปันผลถูก reinvest ในราคา ไม่จ่ายออกมา แอปประเมินจากปันผลจริงของกองแฝด VWRD</div>
+      ${DIVIDENDS.map(d=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px"><span style="color:var(--mt)">${d.exDate}</span><span class="mono" style="color:var(--au)">$${fm(d.perShare)}/หุ้น</span></div>`).join('')}
+      <div style="font-size:10px;color:var(--dm);margin-top:8px">Claude เพิ่มแถวให้ทุกไตรมาสที่จ่ายจริง (รอบหน้า 1 ต.ค.)</div>
     </div>
     <div class="card"><div class="ct">จัดการข้อมูล</div><div class="fb" style="margin-bottom:12px;font-size:13px"><span style="color:var(--mt)">รายการทั้งหมด</span><span class="mono" style="color:var(--wh)">${S.port.length}</span></div><button class="btn-d" onclick="if(confirm('ลบข้อมูลทั้งหมด?')){S.port=[];save();render()}">ลบข้อมูลทั้งหมด</button></div>`;
 }
