@@ -408,19 +408,21 @@ function rDash(st){
     }
 
     <!-- ◆ เครื่องยนต์ที่มองไม่เห็น: ปันผล reinvest (กอง Acc) -->
-    ${st.live&&st.accDivUsd!=null?`<div class="card" style="border-color:var(--ab)">
+    ${st.live&&st.accDivUsd!=null?`<div class="card" style="border-color:rgba(63,185,80,0.3)">
       <div class="ct" style="color:var(--au)">◆ เครื่องยนต์ที่มองไม่เห็น — ปันผล reinvest</div>
-      <div style="font-size:10px;color:var(--dm);margin-bottom:10px">แยก "กำไรจากหุ้น (USD)" ออกเป็น 2 ส่วน</div>
+      <div style="font-size:10px;color:var(--mt);margin-bottom:10px">แยก "กำไรจากหุ้น (USD)" ออกเป็น 2 ส่วน</div>
       <div style="padding:12px;background:var(--s2);border-radius:10px;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--bd)">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0">
           <span style="color:var(--mt)">ราคาหุ้นขึ้นล้วน</span>
           <span id="div-price-only" class="mono" style="color:${st.priceOnlyUsd>=0?'var(--gn)':'var(--rd)'}">${st.priceOnlyUsd>=0?'+':''}$${fm(st.priceOnlyUsd)}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0 2px">
-          <span style="color:var(--au);font-weight:600">ปันผล reinvest (สะสม)</span>
-          <span id="div-acc-usd" class="mono" style="color:var(--au)">+$${fm(st.accDivUsd)}</span>
+        <div style="margin-top:8px;padding:12px;background:var(--gd);border:1px solid rgba(63,185,80,0.4);border-radius:9px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="color:var(--gn);font-weight:700;font-size:13px">ปันผล reinvest (สะสม)</span>
+            <span id="div-acc-usd" class="mono" style="color:var(--gn);font-size:21px;font-weight:800">+$${fm(st.accDivUsd)}</span>
+          </div>
+          ${st.accDivThb!=null?`<div style="display:flex;justify-content:flex-end;margin-top:2px"><span id="div-acc-thb" class="mono" style="color:var(--gn);font-size:12px;opacity:.8">≈ ฿${fm(st.accDivThb,0)}</span></div>`:''}
         </div>
-        ${st.accDivThb!=null?`<div style="display:flex;justify-content:flex-end;font-size:11px;color:var(--dm)"><span id="div-acc-thb" class="mono">≈ ฿${fm(st.accDivThb,0)}</span></div>`:''}
       </div>
       <div style="font-size:10px;color:var(--dm);line-height:1.5">ปันผลจากหุ้น ~3,600 ตัวในกองถูก reinvest อัตโนมัติ (กอง Acc) จึง "มองไม่เห็น" จนกว่าจะขาย — เป็น <b style="color:var(--mt)">ส่วนหนึ่ง</b> ของกำไร ไม่ใช่กำไรเพิ่ม · ตัวเลข <b style="color:var(--mt)">ประมาณการ</b> (อิง VWRD) อัปเดตทุกไตรมาส</div>
     </div>`:''}
