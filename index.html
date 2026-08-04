@@ -99,6 +99,11 @@ select.fi option,select.csel option{background:#1e293b;color:var(--text);padding
 .aact{display:flex;gap:3px}
 .aact button{padding:4px 8px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-size:11px}
 .dca-btn{border-color:rgba(99,102,241,.3)!important;color:var(--accent)!important}
+.rf-btn{border-color:rgba(6,182,212,.3)!important;color:var(--cyan)!important}
+.rf-btn:disabled{opacity:.5;cursor:wait}
+.cat-rf{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:2px 4px;border-radius:6px;opacity:.5;transition:opacity .2s}
+.cat-rf:hover{opacity:1;color:var(--cyan);background:rgba(6,182,212,.1)}
+.cat-rf:disabled{cursor:wait;opacity:.8}
 
 /* Modal */
 .mo{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;animation:fadeIn .2s}
@@ -388,9 +393,11 @@ async function loadAssets(force){
   else{document.getElementById('alist').innerHTML='<div class="empty"><div class="spinner"></div><div style="margin-top:10px">กำลังโหลดข้อมูล...</div></div>';}
 
   // 2. ดึงข้อมูลสด (assets + prices ในครั้งเดียว)
+  const t0=performance.now();
   const params={action:'bootstrap',username:user};
   if(force)params.force='1';
   const r=await api(params);
+  window._lastMs=Math.round(performance.now()-t0);
 
   if(r.ok){
     assets=r.assets||[];
@@ -411,6 +418,37 @@ function showSyncing(on){
 
 async function fetchPrices(force){
   await loadAssets(force);
+}
+
+// รีเฟรชราคาเฉพาะสินทรัพย์ตัวเดียว
+async function refreshOne(assetId,ev){
+  if(ev)ev.stopPropagation();
+  const a=assets.find(x=>x.id===assetId);
+  if(!a||!a.ticker)return;
+
+  const btn=document.getElementById('rf-'+assetId);
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+
+  const r=await api({action:'getPrices',tickers:a.ticker,force:'1'});
+
+  if(r.ok&&r.prices&&r.prices[a.ticker]){
+    LP[a.ticker]=r.prices[a.ticker];
+    PT=r.timestamp;
+    saveCache();
+    render();
+    // ไฮไลต์แถวที่เพิ่งอัปเดต
+    setTimeout(()=>{
+      const row=document.getElementById('row-'+assetId);
+      if(row){
+        row.style.transition='background .4s';
+        row.style.background='rgba(99,102,241,.12)';
+        setTimeout(()=>{row.style.background='';},900);
+      }
+    },30);
+  }else{
+    if(btn){btn.textContent='❌';btn.disabled=false;
+      setTimeout(()=>{btn.textContent='🔄';},1500);}
+  }
 }
 function cv(a){
   if(a.ticker&&LP[a.ticker]){
@@ -628,7 +666,8 @@ function rPstat(){
   if(PT){
     const d=new Date(PT);
     const s=d.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    e.innerHTML='<span class="ldot"></span>ราคาล่าสุด: '+s;
+    const perf=window._lastMs!=null?` · <span style="color:${window._lastMs<400?'var(--green)':window._lastMs<1200?'var(--gold)':'var(--red)'}">${window._lastMs}ms</span>`:'';
+    e.innerHTML='<span class="ldot"></span>ราคาล่าสุด: '+s+perf;
   }else e.textContent='';
 }
 
@@ -651,14 +690,39 @@ function rAlloc(){
 }
 
 function rCatGrid(){
-  const cd={};assets.forEach(a=>{if(!cd[a.cat])cd[a.cat]={cost:0,cur:0};cd[a.cat].cost+=a.cost;cd[a.cat].cur+=cv(a);});
+  const cd={};
+  assets.forEach(a=>{
+    if(!cd[a.cat])cd[a.cat]={cost:0,cur:0,tickers:new Set()};
+    cd[a.cat].cost+=a.cost;cd[a.cat].cur+=cv(a);
+    if(a.ticker)cd[a.cat].tickers.add(a.ticker);
+  });
   document.getElementById('cgrid').innerHTML=Object.entries(cd).sort((a,b)=>b[1].cur-a[1].cur).map(([k,v])=>{
     const g=v.cur-v.cost,p=v.cost?(g/v.cost)*100:0;
+    const rf=v.tickers.size?`<button class="cat-rf" id="crf-${k}" onclick="refreshCat('${k}',event)" title="รีเฟรชราคาหมวดนี้">🔄</button>`:'';
     return `<div class="cc${AF===k?' on':''}" style="--hi:${CATS[k]?.c}" onclick="tF('${k}')">
-      <div style="font-size:18px;margin-bottom:2px">${CATS[k]?.i||'📦'}</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div style="font-size:18px;margin-bottom:2px">${CATS[k]?.i||'📦'}</div>${rf}
+      </div>
       <div style="font-size:11px;color:var(--text2)">${CATS[k]?.l||k}</div>
       <div style="font-size:14px;font-weight:700;font-family:'DM Sans'">฿${fmt(v.cur)}</div>
+      <div style="font-size:12px;font-weight:600;color:${g>=0?'var(--green)':'var(--red)'}">${fB(g)} ฿</div>
       <div style="font-size:11px;font-weight:600;color:${g>=0?'var(--green)':'var(--red)'}">${fP(p)}</div></div>`;}).join('');
+}
+
+// รีเฟรชราคาทั้งหมวด
+async function refreshCat(cat,ev){
+  if(ev)ev.stopPropagation();
+  const tks=[...new Set(assets.filter(a=>a.cat===cat&&a.ticker).map(a=>a.ticker))];
+  if(!tks.length)return;
+  const btn=document.getElementById('crf-'+cat);
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  const r=await api({action:'getPrices',tickers:tks.join(','),force:'1'});
+  if(r.ok&&r.prices){
+    Object.assign(LP,r.prices);
+    PT=r.timestamp;
+    saveCache();
+  }
+  render();
 }
 
 function rControls(){
@@ -685,12 +749,13 @@ function rList(){
       :`<span class="tb empty" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">+ Ticker</span>`;
     const staleBadge=a._s?`<span class="stale-badge" onclick="event.stopPropagation();openUpdateModal('${a.id}')">⚠️ อัปเดตราคา</span>`:'';
     const noPrice=(a.ticker&&!li)?`<span class="stale-badge" title="ดึงราคาไม่ได้ — กด 🔄 ราคาล่าสุด">🔌 ไม่มีราคาสด</span>`:'';
-    return `<div class="ar">
+    return `<div class="ar" id="row-${a.id}">
       <div class="ai" style="background:${c.c}22">${c.i}</div>
       <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}${noPrice}</div><div class="ameta">${c.l} · ${a.date} · ${a.units} หน่วย${a.lastUpdated&&!a.ticker?' · อัปเดต: '+a.lastUpdated:''}</div></div>
       <div class="apb"><div class="acur">฿${fmt(a._v)}</div><div class="acost">ต้นทุน ฿${fmt(a.cost)}</div>${li?`<div class="alive">🟢 ${li.source}${ch24}</div><div style="font-size:10px;color:var(--gold);margin-top:1px">${unitInfo(a)}</div>`:''}</div>
       <div class="agr"><div class="agb" style="color:${a._g>=0?'var(--green)':'var(--red)'}">${fB(a._g)} ฿</div><div class="agp" style="color:${a._g>=0?'var(--green)':'var(--red)'};background:${a._g>=0?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)'}">${fP(a._p)}</div></div>
       <div class="aact">
+        ${a.ticker?`<button id="rf-${a.id}" class="rf-btn" onclick="refreshOne('${a.id}',event)" title="รีเฟรชราคา">🔄</button>`:''}
         <button class="dca-btn" onclick="openDcaModal('${a.id}')" title="บันทึก DCA / ดูประวัติ">📒</button>
         <button onclick="editAsset('${a.id}')" title="แก้ไข">✏️</button>
         <button onclick="deleteAsset('${a.id}')" title="ลบ">🗑️</button>
