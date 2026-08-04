@@ -187,6 +187,8 @@ select.fi option,select.csel option{background:#1e293b;color:var(--text);padding
 <label class="rem"><input type="checkbox" id="inp-remember" checked> จดจำการเข้าสู่ระบบ</label>
 <button class="lbtn" id="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
 <div class="lerr" id="login-error"></div>
+<div style="margin-top:14px"><button onclick="testConnection()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit">🔧 ทดสอบการเชื่อมต่อ</button></div>
+<div id="diag" style="margin-top:10px;font-size:10px;color:var(--text3);text-align:left;word-break:break-all;max-height:140px;overflow-y:auto"></div>
 </div></div>
 
 <div id="app">
@@ -276,7 +278,28 @@ const fmt2=n=>n.toLocaleString('th-TH',{maximumFractionDigits:2});
 const fP=n=>(n>=0?'+':'')+n.toFixed(2)+'%';
 const fB=n=>(n>=0?'+':'')+fmt(n);
 
-async function api(p){const u=new URL(API_URL);Object.entries(p).forEach(([k,v])=>u.searchParams.set(k,v));try{return await(await fetch(u,{redirect:'follow'})).json();}catch(e){return{ok:false,msg:'เชื่อมต่อไม่ได้'};}}
+async function api(p){
+  const u=new URL(API_URL);
+  Object.entries(p).forEach(([k,v])=>{if(v!==undefined&&v!==null)u.searchParams.set(k,v);});
+  try{
+    const res=await fetch(u.toString(),{redirect:'follow'});
+    const text=await res.text();
+    try{
+      return JSON.parse(text);
+    }catch(parseErr){
+      // Server returned HTML (error page) instead of JSON
+      let hint='เซิร์ฟเวอร์ตอบกลับไม่ใช่ JSON';
+      if(text.includes('Script function not found'))hint='Apps Script ไม่พบฟังก์ชัน doGet — ต้อง Deploy version ใหม่';
+      else if(text.includes('Authorization')||text.includes('authorize'))hint='Apps Script ต้องการสิทธิ์ — เปิด URL ใน browser แล้วกด Authorize';
+      else if(text.includes('Sign in')||text.includes('accounts.google.com'))hint='Deployment ตั้งเป็น "Anyone with Google account" — ต้องเปลี่ยนเป็น "Anyone"';
+      console.error('API raw response:',text.slice(0,500));
+      return{ok:false,msg:hint,raw:text.slice(0,200)};
+    }
+  }catch(e){
+    console.error('API fetch error:',e);
+    return{ok:false,msg:'เชื่อมต่อไม่ได้: '+e.message};
+  }
+}
 
 // === LOGIN ===
 const $L=document.getElementById('login-screen'),$A=document.getElementById('app');
@@ -295,6 +318,31 @@ async function doLogin(){
 }
 function enter(){$L.classList.add('fade-out');setTimeout(()=>{$L.style.display='none';$A.style.display='block';document.getElementById('ug').textContent='👤 '+user+(role==='admin'?' 🔑':'');if(role==='admin')document.getElementById('admin-btn').style.display='';loadAssets();},800);}
 function doLogout(){localStorage.removeItem('richman_session');location.reload();}
+
+async function testConnection(){
+  const d=document.getElementById('diag');
+  d.innerHTML='<span style="color:var(--cyan)">⏳ กำลังทดสอบ...</span>';
+  const url=API_URL+'?action=login&username=009&password=bxkssnrz';
+  let out=[];
+  out.push('<b>URL:</b><br>'+API_URL.slice(0,60)+'...');
+  try{
+    const res=await fetch(url,{redirect:'follow'});
+    out.push('<b>HTTP Status:</b> '+res.status+' '+res.statusText);
+    out.push('<b>Content-Type:</b> '+(res.headers.get('content-type')||'-'));
+    const text=await res.text();
+    out.push('<b>Response (200 ตัวแรก):</b><br><span style="color:var(--gold)">'+text.slice(0,200).replace(/</g,'&lt;')+'</span>');
+    try{
+      const j=JSON.parse(text);
+      out.push(j.ok?'<span style="color:var(--green)">✅ เชื่อมต่อสำเร็จ! Login ได้ปกติ</span>':'<span style="color:var(--red)">⚠️ API ทำงาน แต่: '+j.msg+'</span>');
+    }catch(e){
+      out.push('<span style="color:var(--red)">❌ ไม่ใช่ JSON — Apps Script มีปัญหา</span>');
+    }
+  }catch(e){
+    out.push('<span style="color:var(--red)">❌ Fetch ล้มเหลว: '+e.message+'</span>');
+    out.push('<span style="color:var(--orange)">อาจเป็น CORS หรือ deployment ไม่ได้ตั้งเป็น "Anyone"</span>');
+  }
+  d.innerHTML=out.join('<br><br>');
+}
 
 // === DATA ===
 async function loadAssets(){const r=await api({action:'getAssets',username:user});if(r.ok){assets=r.assets||[];await fetchPrices();render();}}
