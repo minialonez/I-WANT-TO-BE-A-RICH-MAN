@@ -426,6 +426,19 @@ function isStale(a){if(a.ticker)return false;if(!a.lastUpdated)return true;const
 function unitInfo(a){
   if(!a.ticker||!LP[a.ticker])return '';
   const p=LP[a.ticker];
+
+  // ทองคำ — แสดงบาท/บาททอง
+  if(a.ticker==='GOLD_TH'){
+    let s='฿'+fmt(p.price_thb)+'/บาททอง';
+    if(p.sell_out_price&&p.sell_out_price!==p.buy_back_price)s+=' (ขายออก ฿'+fmt(p.sell_out_price)+')';
+    return s;
+  }
+
+  // Crypto — แสดงทั้ง THB และ USD
+  if(p.price_usd&&!p.currency){
+    return '฿'+fmt(p.price_thb)+'  ·  $'+fmt2(p.price_usd)+(p.fx_rate?'  @'+fmt2(p.fx_rate):'');
+  }
+
   const cur=p.currency||'THB';
   const up=p.unit_price||p.price_foreign||p.price_thb||0;
   if(!up)return '';
@@ -670,9 +683,10 @@ function rList(){
     const badge=a.ticker?`<span class="tb" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">🏷️ ${a.ticker} ✎</span>`
       :`<span class="tb empty" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">+ Ticker</span>`;
     const staleBadge=a._s?`<span class="stale-badge" onclick="event.stopPropagation();openUpdateModal('${a.id}')">⚠️ อัปเดตราคา</span>`:'';
+    const noPrice=(a.ticker&&!li)?`<span class="stale-badge" title="ดึงราคาไม่ได้ — กด 🔄 ราคาล่าสุด">🔌 ไม่มีราคาสด</span>`:'';
     return `<div class="ar">
       <div class="ai" style="background:${c.c}22">${c.i}</div>
-      <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}</div><div class="ameta">${c.l} · ${a.date} · ${a.units} หน่วย${a.lastUpdated&&!a.ticker?' · อัปเดต: '+a.lastUpdated:''}</div></div>
+      <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}${noPrice}</div><div class="ameta">${c.l} · ${a.date} · ${a.units} หน่วย${a.lastUpdated&&!a.ticker?' · อัปเดต: '+a.lastUpdated:''}</div></div>
       <div class="apb"><div class="acur">฿${fmt(a._v)}</div><div class="acost">ต้นทุน ฿${fmt(a.cost)}</div>${li?`<div class="alive">🟢 ${li.source}${ch24}</div><div style="font-size:10px;color:var(--gold);margin-top:1px">${unitInfo(a)}</div>`:''}</div>
       <div class="agr"><div class="agb" style="color:${a._g>=0?'var(--green)':'var(--red)'}">${fB(a._g)} ฿</div><div class="agp" style="color:${a._g>=0?'var(--green)':'var(--red)'};background:${a._g>=0?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)'}">${fP(a._p)}</div></div>
       <div class="aact">
