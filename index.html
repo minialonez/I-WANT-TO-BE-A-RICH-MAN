@@ -289,8 +289,19 @@ const CATS={
 let user='',role='',assets=[],LP={},AF='all',SB=(localStorage.getItem('richman_sort')||'custom'),PT=null;
 let _sr=[],sTO=null,sType='all',sCtx=null,sTgt=null,dcaAssetId=null,updAssetId=null;
 
-const fmt=n=>n.toLocaleString('th-TH',{maximumFractionDigits:0});
-const fmt2=n=>n.toLocaleString('th-TH',{maximumFractionDigits:2});
+const fmt=n=>n.toLocaleString('th-TH',{maximumFractionDigits:0});const fmt2=n=>n.toLocaleString('th-TH',{maximumFractionDigits:2});
+// ตัดส่วนเวลา/GMT ออก เหลือแค่ YYYY-MM-DD
+function dOnly(v){
+  if(!v)return '';
+  const s=String(v).trim();
+  const m=s.match(/^\d{4}-\d{2}-\d{2}/);
+  if(m)return m[0];
+  const d=new Date(s);
+  if(!isNaN(d.getTime())){
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  return s.split(' GMT')[0].trim();
+}
 const fP=n=>(n>=0?'+':'')+n.toFixed(2)+'%';
 const fB=n=>(n>=0?'+':'')+fmt(n);
 
@@ -595,7 +606,7 @@ async function renderDca(assetId){
     const ppu=t.units>0&&t.amount_usd>0?(t.amount_usd/t.units):0;
     return `<div class="txn-row" style="flex-wrap:wrap">
     <span class="txn-type ${t.type==='buy'?'txn-buy':'txn-sell'}">${t.type==='buy'?'ซื้อ':'ขาย'}</span>
-    <span style="color:var(--text2);min-width:80px">${t.date}</span>
+    <span style="color:var(--text2);min-width:80px">${dOnly(t.date)}</span>
     <span style="font-weight:600">฿${fmt(t.amount_thb)}</span>
     <span style="color:var(--cyan)">$${fmt2(t.amount_usd)}</span>
     <span style="color:var(--text2)">${fmt2(t.units)} หุ้น</span>
@@ -655,7 +666,7 @@ async function delTxn(txnId){if(!confirm('ลบรายการนี้?'))r
 function openUpdateModal(assetId){
   updAssetId=assetId;const a=assets.find(x=>x.id===assetId);if(!a)return;
   document.getElementById('update-modal').style.display='flex';
-  document.getElementById('upd-subtitle').textContent=a.name+' — อัปเดตล่าสุด: '+(a.lastUpdated||'ไม่เคย');
+  document.getElementById('upd-subtitle').textContent=a.name+' — อัปเดตล่าสุด: '+(dOnly(a.lastUpdated)||'ไม่เคย');
   document.getElementById('upd-value').value=a.cost;
   document.getElementById('upd-note').value='';
 }
@@ -768,15 +779,20 @@ function rList(){
     const c=CATS[a.cat]||{i:'📦',c:'#666',l:a.cat};
     const li=a._l?LP[a.ticker]:null;
     const ch24=li?.change_24h!=null?' (24h: '+(li.change_24h>=0?'+':'')+li.change_24h.toFixed(2)+'%)':'';
-    const badge=a.ticker?`<span class="tb" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">🏷️ ${a.ticker} ✎</span>`
-      :`<span class="tb empty" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">+ Ticker</span>`;
+    // เงินสด / สลาก ไม่มีราคาตลาด — ไม่ต้องแสดงปุ่มผูก Ticker
+    const noTicker=(a.cat==='cash'||a.cat==='lottery');
+    const badge=a.ticker
+      ?`<span class="tb" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">🏷️ ${a.ticker} ✎</span>`
+      :(noTicker?'':`<span class="tb empty" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">+ Ticker</span>`);
     const staleBadge=a._s?`<span class="stale-badge" onclick="event.stopPropagation();openUpdateModal('${a.id}')">⚠️ อัปเดตราคา</span>`:'';
     const noPrice=(a.ticker&&!li)?`<span class="stale-badge" title="ดึงราคาไม่ได้">🔌 ไม่มีราคาสด</span>`:'';
     const handle=canDrag?`<div class="drag-handle" data-drag="${a.id}" title="ลากเพื่อจัดลำดับ">⠿</div>`:'';
+    // เงินสด/สลาก ไม่ต้องโชว์ "1 หน่วย"
+    const unitTxt=noTicker&&Number(a.units)===1?'':' · '+a.units+' หน่วย';
     return `<div class="ar" id="row-${a.id}" data-id="${a.id}">
       ${handle}
       <div class="ai" style="background:${c.c}22">${c.i}</div>
-      <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}${noPrice}</div><div class="ameta">${c.l} · ${a.date} · ${a.units} หน่วย${a.lastUpdated&&!a.ticker?' · อัปเดต: '+a.lastUpdated:''}</div></div>
+      <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}${noPrice}</div><div class="ameta">${c.l} · ${dOnly(a.date)}${unitTxt}${a.lastUpdated&&!a.ticker?' · อัปเดต: '+dOnly(a.lastUpdated):''}</div></div>
       <div class="apb"><div class="acur">฿${fmt(a._v)}</div><div class="acost">ต้นทุน ฿${fmt(a.cost)}</div>${li?`<div class="alive">🟢 ${li.source}${ch24}</div><div style="font-size:10px;color:var(--gold);margin-top:1px">${unitInfo(a)}</div>`:''}</div>
       <div class="agr"><div class="agb" style="color:${a._g>=0?'var(--green)':'var(--red)'}">${fB(a._g)} ฿</div><div class="agp" style="color:${a._g>=0?'var(--green)':'var(--red)'};background:${a._g>=0?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)'}">${fP(a._p)}</div></div>
       <div class="aact">
