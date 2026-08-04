@@ -431,6 +431,7 @@ function unitInfo(a){
   if(a.ticker==='GOLD_TH'){
     let s='฿'+fmt(p.price_thb)+'/บาททอง';
     if(p.sell_out_price&&p.sell_out_price!==p.buy_back_price)s+=' (ขายออก ฿'+fmt(p.sell_out_price)+')';
+    if(p.xau_usd)s+=' · XAU $'+fmt2(p.xau_usd);
     return s;
   }
 
