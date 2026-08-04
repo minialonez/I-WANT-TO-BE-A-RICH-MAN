@@ -101,6 +101,17 @@ select.fi option,select.csel option{background:#1e293b;color:var(--text);padding
 .dca-btn{border-color:rgba(99,102,241,.3)!important;color:var(--accent)!important}
 .rf-btn{border-color:rgba(6,182,212,.3)!important;color:var(--cyan)!important}
 .rf-btn:disabled{opacity:.5;cursor:wait}
+
+/* Drag & drop */
+.drag-handle{cursor:grab;color:var(--text3);font-size:16px;padding:0 6px 0 0;user-select:none;touch-action:none;line-height:1;opacity:.45;transition:opacity .2s,color .2s;flex-shrink:0}
+.drag-handle:hover{opacity:1;color:var(--accent)}
+.drag-handle:active{cursor:grabbing}
+.ar.dragging{opacity:.35;border-color:var(--accent)!important;background:rgba(99,102,241,.08)}
+.ar.drop-target{border-color:var(--accent)!important;box-shadow:0 0 0 1px var(--accent) inset}
+.ar{touch-action:pan-y}
+.reorder-hint{font-size:11px;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.reorder-save{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s}
+.reorder-save.on{opacity:1}
 .cat-rf{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:2px 4px;border-radius:6px;opacity:.5;transition:opacity .2s}
 .cat-rf:hover{opacity:1;color:var(--cyan);background:rgba(6,182,212,.1)}
 .cat-rf:disabled{cursor:wait;opacity:.8}
@@ -275,7 +286,7 @@ const CATS={
   insurance:{l:'ประกันชีวิต+ลงทุน',i:'🛡️',c:'#ec4899'},
 };
 
-let user='',role='',assets=[],LP={},AF='all',SB='growth_pct',PT=null;
+let user='',role='',assets=[],LP={},AF='all',SB=(localStorage.getItem('richman_sort')||'custom'),PT=null;
 let _sr=[],sTO=null,sType='all',sCtx=null,sTgt=null,dcaAssetId=null,updAssetId=null;
 
 const fmt=n=>n.toLocaleString('th-TH',{maximumFractionDigits:0});
@@ -729,7 +740,7 @@ function rControls(){
   const pills=[['all','ทั้งหมด'],...Object.entries(CATS).map(([k,v])=>[k,v.i+' '+v.l])];
   document.getElementById('ctrls').innerHTML=pills.map(([k,l])=>`<button class="pill${AF===k?' on':''}" onclick="tF('${k}')">${l}</button>`).join('')
     +'<span style="flex:1"></span>'
-    +`<select class="csel" onchange="SB=this.value;render()"><option value="growth_pct"${SB==='growth_pct'?' selected':''}>% เติบโต</option><option value="growth_baht"${SB==='growth_baht'?' selected':''}>฿ กำไร</option><option value="value"${SB==='value'?' selected':''}>มูลค่า</option></select>`
+    +`<select class="csel" onchange="SB=this.value;localStorage.setItem('richman_sort',SB);render()"><option value="custom"${SB==='custom'?' selected':''}>🔀 เรียงเอง (ลากได้)</option><option value="growth_pct"${SB==='growth_pct'?' selected':''}>% เติบโต</option><option value="growth_baht"${SB==='growth_baht'?' selected':''}>฿ กำไร</option><option value="value"${SB==='value'?' selected':''}>มูลค่า</option></select>`
     +`<button class="abtn" onclick="toggleAddForm(true)">+ เพิ่ม</button>`;
 }
 
@@ -737,19 +748,33 @@ function rList(){
   let list=AF==='all'?[...assets]:assets.filter(a=>a.cat===AF);
   list=list.map(a=>({...a,_v:cv(a),_l:isLive(a),_s:isStale(a)}));
   list.forEach(a=>{a._g=a._v-a.cost;a._p=a.cost?(a._g/a.cost)*100:0;});
-  list.sort((a,b)=>{if(SB==='growth_pct')return b._p-a._p;if(SB==='growth_baht')return b._g-a._g;return b._v-a._v;});
 
-  if(!list.length){document.getElementById('alist').innerHTML='<div class="empty"><div style="font-size:40px;margin-bottom:12px">📭</div>ไม่พบสินทรัพย์</div>';return;}
+  const canDrag=(SB==='custom');
+  list.sort((a,b)=>{
+    if(SB==='custom')     return (a.sort??9999)-(b.sort??9999)||a.name.localeCompare(b.name);
+    if(SB==='growth_pct') return b._p-a._p;
+    if(SB==='growth_baht')return b._g-a._g;
+    return b._v-a._v;
+  });
 
-  document.getElementById('alist').innerHTML=list.map(a=>{
+  const el=document.getElementById('alist');
+  if(!list.length){el.innerHTML='<div class="empty"><div style="font-size:40px;margin-bottom:12px">📭</div>ไม่พบสินทรัพย์</div>';return;}
+
+  const hint=canDrag
+    ? `<div class="reorder-hint">⠿ ลากที่จับด้านซ้ายเพื่อจัดลำดับเอง <span class="reorder-save" id="reorder-save">✓ บันทึกแล้ว</span></div>`
+    : '';
+
+  el.innerHTML=hint+list.map(a=>{
     const c=CATS[a.cat]||{i:'📦',c:'#666',l:a.cat};
     const li=a._l?LP[a.ticker]:null;
     const ch24=li?.change_24h!=null?' (24h: '+(li.change_24h>=0?'+':'')+li.change_24h.toFixed(2)+'%)':'';
     const badge=a.ticker?`<span class="tb" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">🏷️ ${a.ticker} ✎</span>`
       :`<span class="tb empty" onclick="event.stopPropagation();openSearchModal('swap','${a.id}')">+ Ticker</span>`;
     const staleBadge=a._s?`<span class="stale-badge" onclick="event.stopPropagation();openUpdateModal('${a.id}')">⚠️ อัปเดตราคา</span>`:'';
-    const noPrice=(a.ticker&&!li)?`<span class="stale-badge" title="ดึงราคาไม่ได้ — กด 🔄 ราคาล่าสุด">🔌 ไม่มีราคาสด</span>`:'';
-    return `<div class="ar" id="row-${a.id}">
+    const noPrice=(a.ticker&&!li)?`<span class="stale-badge" title="ดึงราคาไม่ได้">🔌 ไม่มีราคาสด</span>`:'';
+    const handle=canDrag?`<div class="drag-handle" data-drag="${a.id}" title="ลากเพื่อจัดลำดับ">⠿</div>`:'';
+    return `<div class="ar" id="row-${a.id}" data-id="${a.id}">
+      ${handle}
       <div class="ai" style="background:${c.c}22">${c.i}</div>
       <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}${noPrice}</div><div class="ameta">${c.l} · ${a.date} · ${a.units} หน่วย${a.lastUpdated&&!a.ticker?' · อัปเดต: '+a.lastUpdated:''}</div></div>
       <div class="apb"><div class="acur">฿${fmt(a._v)}</div><div class="acost">ต้นทุน ฿${fmt(a.cost)}</div>${li?`<div class="alive">🟢 ${li.source}${ch24}</div><div style="font-size:10px;color:var(--gold);margin-top:1px">${unitInfo(a)}</div>`:''}</div>
@@ -761,6 +786,91 @@ function rList(){
         <button onclick="deleteAsset('${a.id}')" title="ลบ">🗑️</button>
       </div></div>`;
   }).join('');
+
+  if(canDrag)bindDrag();
+}
+
+// ═══ DRAG & DROP จัดลำดับ ═══
+let _dragId=null,_dragEl=null,_saveTimer=null;
+
+function bindDrag(){
+  document.querySelectorAll('.drag-handle').forEach(h=>{
+    h.addEventListener('pointerdown',startDrag);
+  });
+}
+
+function startDrag(e){
+  e.preventDefault();
+  _dragId=e.currentTarget.dataset.drag;
+  _dragEl=document.getElementById('row-'+_dragId);
+  if(!_dragEl)return;
+  _dragEl.classList.add('dragging');
+  document.body.style.userSelect='none';
+  document.addEventListener('pointermove',onDragMove);
+  document.addEventListener('pointerup',endDrag,{once:true});
+  document.addEventListener('pointercancel',endDrag,{once:true});
+}
+
+function onDragMove(e){
+  if(!_dragId)return;
+  const rows=[...document.querySelectorAll('.ar[data-id]')];
+  const y=e.clientY;
+
+  // หาแถวที่ตัวชี้อยู่เหนือ
+  let target=null;
+  for(const r of rows){
+    if(r.dataset.id===_dragId)continue;
+    const b=r.getBoundingClientRect();
+    if(y>=b.top&&y<=b.bottom){target=r;break;}
+  }
+  document.querySelectorAll('.drop-target').forEach(r=>r.classList.remove('drop-target'));
+  if(!target)return;
+  target.classList.add('drop-target');
+
+  // สลับตำแหน่งในอาร์เรย์ทันที
+  const from=assets.findIndex(a=>a.id===_dragId);
+  const to=assets.findIndex(a=>a.id===target.dataset.id);
+  if(from<0||to<0||from===to)return;
+
+  const tb=target.getBoundingClientRect();
+  const mid=tb.top+tb.height/2;
+  // ลากลง → วางหลัง / ลากขึ้น → วางหน้า
+  if((from<to&&y<mid)||(from>to&&y>mid))return;
+
+  const [moved]=assets.splice(from,1);
+  assets.splice(to,0,moved);
+  assets.forEach((a,i)=>a.sort=i);
+
+  // วาดใหม่แล้วผูก event ใหม่ พร้อมคงสถานะลาก
+  rList();
+  _dragEl=document.getElementById('row-'+_dragId);
+  if(_dragEl)_dragEl.classList.add('dragging');
+}
+
+function endDrag(){
+  document.removeEventListener('pointermove',onDragMove);
+  document.body.style.userSelect='';
+  document.querySelectorAll('.dragging,.drop-target').forEach(r=>{
+    r.classList.remove('dragging');r.classList.remove('drop-target');
+  });
+  if(_dragId){
+    saveCache();
+    scheduleSaveOrder();
+  }
+  _dragId=null;_dragEl=null;
+}
+
+// บันทึกลำดับขึ้นเซิร์ฟเวอร์ (หน่วง 800ms กันยิงถี่)
+function scheduleSaveOrder(){
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(async()=>{
+    const order=assets.map(a=>a.id).join(',');
+    const r=await api({action:'reorderAssets',username:user,order});
+    if(r.ok){
+      const el=document.getElementById('reorder-save');
+      if(el){el.classList.add('on');setTimeout(()=>el.classList.remove('on'),1600);}
+    }
+  },800);
 }
 
 // === ACTIONS ===
