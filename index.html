@@ -330,8 +330,16 @@ async function doLogin(){
   if(r.ok){user=r.username;role=r.role||'user';if(document.getElementById('inp-remember').checked)localStorage.setItem('richman_session',JSON.stringify({username:user,role}));enter();}
   else{er.textContent=r.msg||'ไม่สำเร็จ';b.disabled=false;b.textContent='เข้าสู่ระบบ';}
 }
-function enter(){$L.classList.add('fade-out');setTimeout(()=>{$L.style.display='none';$A.style.display='block';document.getElementById('ug').textContent='👤 '+user+(role==='admin'?' 🔑':'');if(role==='admin')document.getElementById('admin-btn').style.display='';loadAssets();},800);}
-function doLogout(){localStorage.removeItem('richman_session');location.reload();}
+function enter(){
+  // เริ่มโหลดข้อมูลทันที ไม่ต้องรอ animation จบ
+  $A.style.display='block';
+  document.getElementById('ug').textContent='👤 '+user+(role==='admin'?' 🔑':'');
+  if(role==='admin')document.getElementById('admin-btn').style.display='';
+  loadAssets();
+  $L.classList.add('fade-out');
+  setTimeout(()=>{$L.style.display='none';},800);
+}
+function doLogout(){localStorage.removeItem('richman_session');localStorage.removeItem(CACHE_KEY);location.reload();}
 
 async function testConnection(){
   const d=document.getElementById('diag');
@@ -356,26 +364,53 @@ async function testConnection(){
 }
 
 // === DATA ===
-async function loadAssets(){
-  const r=await api({action:'getAssets',username:user});
+const CACHE_KEY='richman_cache';
+
+function saveCache(){
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify({assets,LP,PT,at:Date.now()}));}catch(e){}
+}
+
+function loadCache(){
+  try{
+    const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+    if(c&&c.assets&&c.assets.length){
+      assets=c.assets;LP=c.LP||{};PT=c.PT||null;
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+async function loadAssets(force){
+  // 1. แสดงจาก cache ทันที (0 วินาที)
+  const hadCache=loadCache();
+  if(hadCache){render();showSyncing(true);}
+  else{document.getElementById('alist').innerHTML='<div class="empty"><div class="spinner"></div><div style="margin-top:10px">กำลังโหลดข้อมูล...</div></div>';}
+
+  // 2. ดึงข้อมูลสด (assets + prices ในครั้งเดียว)
+  const params={action:'bootstrap',username:user};
+  if(force)params.force='1';
+  const r=await api(params);
+
   if(r.ok){
     assets=r.assets||[];
-    render();                  // แสดงผลทันที ไม่ต้องรอราคา
-    fetchPrices();             // ดึงราคาเบื้องหลัง (ไม่ await)
+    LP=r.prices||{};
+    PT=r.timestamp;
+    saveCache();
+    render();
   }
+  showSyncing(false);
+}
+
+function showSyncing(on){
+  const b=document.getElementById('btn-refresh');
+  if(!b)return;
+  b.disabled=on;
+  b.textContent=on?'⏳ ซิงค์...':'🔄 ราคาล่าสุด';
 }
 
 async function fetchPrices(force){
-  const tks=[...new Set(assets.map(a=>a.ticker).filter(Boolean))];
-  if(!tks.length)return;
-  const b=document.getElementById('btn-refresh');
-  if(b){b.disabled=true;b.textContent='⏳ ราคา...';}
-  const params={action:'getPrices',tickers:tks.join(',')};
-  if(force)params.force='1';
-  const r=await api(params);
-  if(r.ok){LP=r.prices||{};PT=r.timestamp;if(r.cached)PT=r.timestamp;}
-  if(b){b.disabled=false;b.textContent='🔄 ราคาล่าสุด';}
-  render();
+  await loadAssets(force);
 }
 function cv(a){
   if(a.ticker&&LP[a.ticker]){
@@ -740,7 +775,7 @@ async function deleteUser(target){
   if(r.ok){alert(r.msg);await renderAdmin();}else alert(r.msg);
 }
 
-setInterval(()=>{if(user&&assets.some(a=>a.ticker))fetchPrices();},5*60*1000);
+setInterval(()=>{if(user&&assets.some(a=>a.ticker))loadAssets();},10*60*1000);
 </script>
 </body>
 </html>
