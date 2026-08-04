@@ -278,27 +278,41 @@ const fmt2=n=>n.toLocaleString('th-TH',{maximumFractionDigits:2});
 const fP=n=>(n>=0?'+':'')+n.toFixed(2)+'%';
 const fB=n=>(n>=0?'+':'')+fmt(n);
 
-async function api(p){
-  const u=new URL(API_URL);
-  Object.entries(p).forEach(([k,v])=>{if(v!==undefined&&v!==null)u.searchParams.set(k,v);});
-  try{
-    const res=await fetch(u.toString(),{redirect:'follow'});
-    const text=await res.text();
-    try{
-      return JSON.parse(text);
-    }catch(parseErr){
-      // Server returned HTML (error page) instead of JSON
-      let hint='เซิร์ฟเวอร์ตอบกลับไม่ใช่ JSON';
-      if(text.includes('Script function not found'))hint='Apps Script ไม่พบฟังก์ชัน doGet — ต้อง Deploy version ใหม่';
-      else if(text.includes('Authorization')||text.includes('authorize'))hint='Apps Script ต้องการสิทธิ์ — เปิด URL ใน browser แล้วกด Authorize';
-      else if(text.includes('Sign in')||text.includes('accounts.google.com'))hint='Deployment ตั้งเป็น "Anyone with Google account" — ต้องเปลี่ยนเป็น "Anyone"';
-      console.error('API raw response:',text.slice(0,500));
-      return{ok:false,msg:hint,raw:text.slice(0,200)};
-    }
-  }catch(e){
-    console.error('API fetch error:',e);
-    return{ok:false,msg:'เชื่อมต่อไม่ได้: '+e.message};
-  }
+// JSONP — bypasses CORS entirely (Apps Script friendly)
+let _jsonpId=0;
+function api(p){
+  return new Promise((resolve)=>{
+    const cbName='__rmcb'+(++_jsonpId)+'_'+Date.now();
+    const u=new URL(API_URL);
+    Object.entries(p).forEach(([k,v])=>{if(v!==undefined&&v!==null)u.searchParams.set(k,v);});
+    u.searchParams.set('callback',cbName);
+
+    const script=document.createElement('script');
+    let done=false;
+
+    const cleanup=()=>{
+      try{delete window[cbName];}catch(e){window[cbName]=undefined;}
+      if(script.parentNode)script.parentNode.removeChild(script);
+    };
+
+    window[cbName]=(data)=>{
+      done=true;cleanup();resolve(data);
+    };
+
+    script.onerror=()=>{
+      if(done)return;done=true;cleanup();
+      resolve({ok:false,msg:'เชื่อมต่อ Apps Script ไม่ได้ — ตรวจสอบ URL และ Deploy'});
+    };
+
+    // Timeout 30s
+    setTimeout(()=>{
+      if(done)return;done=true;cleanup();
+      resolve({ok:false,msg:'หมดเวลาเชื่อมต่อ (30 วินาที)'});
+    },30000);
+
+    script.src=u.toString();
+    document.head.appendChild(script);
+  });
 }
 
 // === LOGIN ===
@@ -321,25 +335,22 @@ function doLogout(){localStorage.removeItem('richman_session');location.reload()
 
 async function testConnection(){
   const d=document.getElementById('diag');
-  d.innerHTML='<span style="color:var(--cyan)">⏳ กำลังทดสอบ...</span>';
-  const url=API_URL+'?action=login&username=009&password=bxkssnrz';
-  let out=[];
-  out.push('<b>URL:</b><br>'+API_URL.slice(0,60)+'...');
-  try{
-    const res=await fetch(url,{redirect:'follow'});
-    out.push('<b>HTTP Status:</b> '+res.status+' '+res.statusText);
-    out.push('<b>Content-Type:</b> '+(res.headers.get('content-type')||'-'));
-    const text=await res.text();
-    out.push('<b>Response (200 ตัวแรก):</b><br><span style="color:var(--gold)">'+text.slice(0,200).replace(/</g,'&lt;')+'</span>');
-    try{
-      const j=JSON.parse(text);
-      out.push(j.ok?'<span style="color:var(--green)">✅ เชื่อมต่อสำเร็จ! Login ได้ปกติ</span>':'<span style="color:var(--red)">⚠️ API ทำงาน แต่: '+j.msg+'</span>');
-    }catch(e){
-      out.push('<span style="color:var(--red)">❌ ไม่ใช่ JSON — Apps Script มีปัญหา</span>');
-    }
-  }catch(e){
-    out.push('<span style="color:var(--red)">❌ Fetch ล้มเหลว: '+e.message+'</span>');
-    out.push('<span style="color:var(--orange)">อาจเป็น CORS หรือ deployment ไม่ได้ตั้งเป็น "Anyone"</span>');
+  d.innerHTML='<span style="color:var(--cyan)">⏳ กำลังทดสอบ (JSONP)...</span>';
+  let out=['<b>URL:</b><br>'+API_URL.slice(0,55)+'...'];
+
+  // Test 1: ping
+  const ping=await api({action:'ping'});
+  if(ping.ok){
+    out.push('<span style="color:var(--green)">✅ Apps Script ตอบกลับได้ (JSONP OK)</span>');
+    out.push('<b>Server time:</b> '+(ping.time||'-'));
+    // Test 2: login
+    const lg=await api({action:'login',username:'009',password:'bxkssnrz'});
+    out.push(lg.ok
+      ?'<span style="color:var(--green)">✅ Login สำเร็จ! role='+(lg.role||'-')+'</span>'
+      :'<span style="color:var(--orange)">⚠️ เชื่อมต่อได้ แต่ login ไม่ผ่าน: '+lg.msg+'</span>');
+  }else{
+    out.push('<span style="color:var(--red)">❌ '+ping.msg+'</span>');
+    out.push('<span style="color:var(--orange)">ตรวจสอบ: 1) Deploy version ใหม่แล้วหรือยัง 2) Who has access = Anyone 3) โค้ดมี doGet</span>');
   }
   d.innerHTML=out.join('<br><br>');
 }
