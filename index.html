@@ -195,7 +195,7 @@ select.fi option,select.csel option{background:#1e293b;color:var(--text);padding
 <div class="ubar">
 <span style="flex:1;font-size:12px;color:var(--text3)" id="ug"></span>
 <button class="admin-btn" id="admin-btn" style="display:none" onclick="openAdminModal()">⚙️ จัดการ User</button>
-<button class="ubtn cy" id="btn-refresh" onclick="fetchPrices()">🔄 ราคาล่าสุด</button>
+<button class="ubtn cy" id="btn-refresh" onclick="fetchPrices(true)">🔄 ราคาล่าสุด</button>
 <button class="ubtn" onclick="doLogout()">ออกจากระบบ</button>
 </div>
 <div class="hdr"><div class="tag">Portfolio Dashboard</div><h1>I WANT TO BE A RICH MAN</h1>
@@ -356,12 +356,26 @@ async function testConnection(){
 }
 
 // === DATA ===
-async function loadAssets(){const r=await api({action:'getAssets',username:user});if(r.ok){assets=r.assets||[];await fetchPrices();render();}}
-async function fetchPrices(){
-  const tks=[...new Set(assets.map(a=>a.ticker).filter(Boolean))];if(!tks.length){render();return;}
-  const b=document.getElementById('btn-refresh');b.disabled=true;b.textContent='⏳ โหลด...';
-  const r=await api({action:'getPrices',tickers:tks.join(',')});
-  if(r.ok){LP=r.prices||{};PT=r.timestamp;}b.disabled=false;b.textContent='🔄 ราคาล่าสุด';render();
+async function loadAssets(){
+  const r=await api({action:'getAssets',username:user});
+  if(r.ok){
+    assets=r.assets||[];
+    render();                  // แสดงผลทันที ไม่ต้องรอราคา
+    fetchPrices();             // ดึงราคาเบื้องหลัง (ไม่ await)
+  }
+}
+
+async function fetchPrices(force){
+  const tks=[...new Set(assets.map(a=>a.ticker).filter(Boolean))];
+  if(!tks.length)return;
+  const b=document.getElementById('btn-refresh');
+  if(b){b.disabled=true;b.textContent='⏳ ราคา...';}
+  const params={action:'getPrices',tickers:tks.join(',')};
+  if(force)params.force='1';
+  const r=await api(params);
+  if(r.ok){LP=r.prices||{};PT=r.timestamp;if(r.cached)PT=r.timestamp;}
+  if(b){b.disabled=false;b.textContent='🔄 ราคาล่าสุด';}
+  render();
 }
 function cv(a){
   if(a.ticker&&LP[a.ticker]){
