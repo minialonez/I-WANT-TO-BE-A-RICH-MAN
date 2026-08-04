@@ -609,7 +609,14 @@ async function submitYearlyUpdate(){
 
 // === RENDER ===
 function render(){rSummary();rAlloc();rCatGrid();rControls();rList();rPstat();}
-function rPstat(){const e=document.getElementById('pstat');if(PT){const d=new Date(PT);e.innerHTML='<span class="ldot"></span>ราคาล่าสุด: '+d.toLocaleString('th-TH');}else e.textContent='';}
+function rPstat(){
+  const e=document.getElementById('pstat');
+  if(PT){
+    const d=new Date(PT);
+    const s=d.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    e.innerHTML='<span class="ldot"></span>ราคาล่าสุด: '+s;
+  }else e.textContent='';
+}
 
 function rSummary(){
   const tc=assets.reduce((s,a)=>s+a.cost,0),tv=assets.reduce((s,a)=>s+cv(a),0),g=tv-tc,p=tc?(g/tc)*100:0;
