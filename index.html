@@ -276,6 +276,17 @@ select.fi option,select.csel option{background:#1e293b;color:var(--text);padding
 </div></div>
 
 <script>
+window.addEventListener('error',function(e){
+  console.error('Uncaught:',e.error||e.message);
+  const el=document.getElementById('alist');
+  if(el&&el.innerHTML.indexOf('กำลังโหลดข้อมูล')>-1){
+    el.innerHTML='<div class="empty" style="padding:40px 20px"><div style="font-size:34px;margin-bottom:10px">⚠️</div>'
+      +'<div style="color:var(--red);font-weight:600">เกิดข้อผิดพลาด</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin:8px auto 14px;max-width:440px">'+(e.message||'')+'</div>'
+      +'<button class="abtn" onclick="localStorage.removeItem(\'richman_cache\');location.reload()">🔄 ล้างข้อมูลชั่วคราวแล้วโหลดใหม่</button></div>';
+  }
+});
+
 const API_URL='https://script.google.com/macros/s/AKfycbxYGTAsY13UPUaf4aCddumDOKdkUuVaO9m-8BEFP5u1BEEVSiyI68-TkBVW90CpPudC/exec';
 
 const CATS={
@@ -409,27 +420,66 @@ function loadCache(){
   return false;
 }
 
+function showLoadError(msg,detail){
+  document.getElementById('alist').innerHTML=
+    `<div class="empty" style="padding:40px 20px">
+      <div style="font-size:34px;margin-bottom:10px">⚠️</div>
+      <div style="color:var(--red);font-weight:600;margin-bottom:6px">${msg}</div>
+      ${detail?`<div style="font-size:11px;color:var(--text3);max-width:460px;margin:0 auto 14px;word-break:break-word">${detail}</div>`:''}
+      <button class="abtn" onclick="loadAssets(true)" style="margin-right:6px">🔄 ลองใหม่</button>
+      <button class="ubtn" onclick="doLogout()">ออกจากระบบ</button>
+    </div>`;
+}
+
+// เรียก render แบบปลอดภัย — ถ้าพังจะแสดง error ไม่ค้างหน้าจอ
+function safeRender(){
+  try{ render(); return true; }
+  catch(e){
+    console.error('Render error:',e);
+    showLoadError('แสดงผลไม่สำเร็จ',e.message+' — ลองกดล้างข้อมูลชั่วคราวแล้วโหลดใหม่');
+    return false;
+  }
+}
+
 async function loadAssets(force){
   // 1. แสดงจาก cache ทันที (0 วินาที)
   const hadCache=loadCache();
-  if(hadCache){render();showSyncing(true);}
+  if(hadCache){safeRender();showSyncing(true);}
   else{document.getElementById('alist').innerHTML='<div class="empty"><div class="spinner"></div><div style="margin-top:10px">กำลังโหลดข้อมูล...</div></div>';}
 
   // 2. ดึงข้อมูลสด (assets + prices ในครั้งเดียว)
   const t0=performance.now();
   const params={action:'bootstrap',username:user};
   if(force)params.force='1';
-  const r=await api(params);
+
+  let r;
+  try{ r=await api(params); }
+  catch(e){ r={ok:false,msg:'เรียก API ไม่สำเร็จ: '+e.message}; }
   window._lastMs=Math.round(performance.now()-t0);
 
-  if(r.ok){
+  if(r&&r.ok){
     assets=r.assets||[];
     LP=r.prices||{};
     PT=r.timestamp;
     saveCache();
-    render();
+    safeRender();
+  }else{
+    // โหลดสดไม่ได้ — ถ้ามี cache ก็ใช้ของเดิมไปก่อน
+    if(hadCache&&assets.length){
+      safeRender();
+      const st=document.getElementById('pstat');
+      if(st)st.innerHTML='<span style="color:var(--orange)">⚠️ ใช้ข้อมูลที่บันทึกไว้ — ซิงค์ไม่สำเร็จ: '+((r&&r.msg)||'ไม่ทราบสาเหตุ')+'</span>';
+    }else{
+      showLoadError('โหลดข้อมูลไม่สำเร็จ',(r&&r.msg)||'ไม่ทราบสาเหตุ');
+    }
   }
   showSyncing(false);
+}
+
+// ล้าง cache ชั่วคราวแล้วโหลดใหม่ (ใช้เวลาโครงสร้างข้อมูลเปลี่ยน)
+function clearCacheReload(){
+  localStorage.removeItem(CACHE_KEY);
+  location.reload();
 }
 
 function showSyncing(on){
@@ -483,7 +533,13 @@ function cv(a){
   return a.cost;
 }
 function isLive(a){return !!(a.ticker&&LP[a.ticker]&&(LP[a.ticker].price_thb>0));}
-function isStale(a){if(a.ticker)return false;if(!a.lastUpdated)return true;const lu=new Date(a.lastUpdated),now=new Date();return(now-lu)>365*24*60*60*1000;}
+function isStale(a){
+  if(!a||a.ticker)return false;
+  if(!a.lastUpdated)return true;
+  const lu=new Date(dOnly(a.lastUpdated));
+  if(isNaN(lu.getTime()))return true;
+  return(Date.now()-lu.getTime())>365*24*60*60*1000;
+}
 function unitInfo(a){
   if(!a.ticker||!LP[a.ticker])return '';
   const p=LP[a.ticker];
@@ -881,7 +937,7 @@ function rList(){
 
   const canDrag=(SB==='custom');
   list.sort((a,b)=>{
-    if(SB==='custom')     return (a.sort??9999)-(b.sort??9999)||a.name.localeCompare(b.name);
+    if(SB==='custom')     return (Number(a.sort)||9999)-(Number(b.sort)||9999)||String(a.name||'').localeCompare(String(b.name||''));
     if(SB==='growth_pct') return b._p-a._p;
     if(SB==='growth_baht')return b._g-a._g;
     return b._v-a._v;
