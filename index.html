@@ -596,18 +596,29 @@ async function renderDca(assetId){
   const a=assets.find(x=>x.id===assetId);
 
   let totalThb=0,totalUsd=0,totalUnits=0,totalFee=0,sellThb=0,sellUnits=0;
-  let divThb=0,divUsd=0,divCount=0;
+  let divThb=0,divUsd=0,divCount=0,intThb=0,intCount=0;
+
   txns.forEach(t=>{
     if(t.type==='buy'){totalThb+=t.amount_thb;totalUsd+=t.amount_usd;totalUnits+=t.units;totalFee+=(t.fee_usd||0);}
-    else if(t.type==='dividend'){divThb+=t.amount_thb;divUsd+=(t.amount_usd||0);divCount++;totalUnits+=t.units;}
+    else if(t.type==='dividend'||t.type==='interest'){
+      if(t.type==='interest'){intThb+=t.amount_thb;intCount++;}
+      else{divThb+=t.amount_thb;divUsd+=(t.amount_usd||0);divCount++;}
+      totalUnits+=t.units;
+    }
     else{sellThb+=t.amount_thb;sellUnits+=t.units;}
   });
+  // ถ้ายังไม่มีรายการ buy บันทึกไว้ ให้ใช้ต้นทุนจากตัวสินทรัพย์เอง
+  if(totalThb===0&&a&&a.cost>0)totalThb=a.cost;
+  // ใช้รายได้สะสมจากตัวสินทรัพย์ ถ้ามากกว่าที่นับจาก transactions
+  const assetInc=a?(Number(a.income)||0):0;
+  if(assetInc>intThb+divThb){intThb=assetInc-divThb;if(intCount===0)intCount=1;}
   const netCost=totalThb-sellThb;
   const netUnits=totalUnits-sellUnits;
   const curVal=a?cv(a):0;
   const profit=curVal-netCost;                 // กำไรจากราคา
-  const totalReturn=profit+divThb;             // ผลตอบแทนรวม (ราคา + ปันผลเงินสด)
+  const totalReturn=profit+divThb+intThb;      // ผลตอบแทนรวม (ราคา + ปันผล + ดอกเบี้ย)
   const divYield=netCost>0?(divThb/netCost)*100:0;
+  const intYield=netCost>0?(intThb/netCost)*100:0;
   const avgCostThb=totalUnits>0?totalThb/totalUnits:0;
   const avgCostUsd=totalUnits>0?totalUsd/totalUnits:0;
   const avgRate=totalUsd>0?totalThb/(totalUsd+totalFee):0;
@@ -622,8 +633,9 @@ async function renderDca(assetId){
     <div class="dca-card"><div class="dl">ถัวเฉลี่ยต่อหุ้น</div><div class="dv">$${fmt2(avgCostUsd)}</div><div class="ds">≈ ฿${fmt2(avgCostThb)}/หุ้น</div></div>
     <div class="dca-card"><div class="dl">มูลค่าปัจจุบัน</div><div class="dv" style="color:var(--cyan)">฿${fmt(curVal)}</div><div class="ds">${netUnits>0?fmt2(netUnits)+' หุ้น':''}</div></div>
     <div class="dca-card"><div class="dl">กำไรจากราคา</div><div class="dv" style="color:${profit>=0?'var(--green)':'var(--red)'}">฿${fB(profit)}</div><div class="ds">${netCost>0?fP((profit/netCost)*100):''}</div></div>
-    <div class="dca-card"><div class="dl">💰 เงินปันผลรับเป็นเงินสด</div><div class="dv" style="color:${divThb>0?'var(--gold)':'var(--text3)'}">฿${fmt(divThb)}</div><div class="ds">${divCount?divCount+' ครั้ง · yield '+divYield.toFixed(2)+'%':'ยังไม่มี'}</div></div>
-    <div class="dca-card" style="border-color:rgba(99,102,241,.35)"><div class="dl">📊 ผลตอบแทนรวม</div><div class="dv" style="color:${totalReturn>=0?'var(--green)':'var(--red)'}">฿${fB(totalReturn)}</div><div class="ds">${netCost>0?fP((totalReturn/netCost)*100):''} · ราคา+ปันผล</div></div>
+    ${intThb>0?`<div class="dca-card" style="border-color:rgba(234,179,8,.35)"><div class="dl">💵 ดอกเบี้ยรับสะสม</div><div class="dv" style="color:var(--gold)">฿${fmt(intThb)}</div><div class="ds">${intYield.toFixed(2)}% ของเงินต้น · ${intCount} รายการ</div></div>`:''}
+    ${(divThb>0||intThb<=0)?`<div class="dca-card"><div class="dl">💰 เงินปันผลรับเป็นเงินสด</div><div class="dv" style="color:${divThb>0?'var(--gold)':'var(--text3)'}">฿${fmt(divThb)}</div><div class="ds">${divCount?divCount+' ครั้ง · yield '+divYield.toFixed(2)+'%':'ยังไม่มี'}</div></div>`:''}
+    <div class="dca-card" style="border-color:rgba(99,102,241,.35)"><div class="dl">📊 ผลตอบแทนรวม</div><div class="dv" style="color:${totalReturn>=0?'var(--green)':'var(--red)'}">฿${fB(totalReturn)}</div><div class="ds">${netCost>0?fP((totalReturn/netCost)*100):''}${intThb>0?' · ราคา+ดอกเบี้ย':' · ราคา+ปันผล'}</div></div>
     ${avgRate>0?`<div class="dca-card"><div class="dl">เรท THB/USD เฉลี่ย</div><div class="dv" style="color:var(--gold)">${fmt2(avgRate)}</div></div>`:''}
   </div>
 
@@ -644,13 +656,13 @@ async function renderDca(assetId){
   </div>`:''}
 
   ${totalReturn!==0?`<div style="background:${totalReturn>=0?'rgba(16,185,129,.06)':'rgba(244,63,94,.06)'};border:1px solid ${totalReturn>=0?'rgba(16,185,129,.15)':'rgba(244,63,94,.15)'};border-radius:12px;padding:14px;margin-bottom:16px;font-size:12px;color:${totalReturn>=0?'var(--green)':'var(--red)'}">
-    💰 <strong>สรุปสำหรับการถอน:</strong> เงินต้น ฿${fmt(netCost)} (≈ $${fmt2(totalUsd)}) · ${profit>=0?'กำไรจากราคา':'ขาดทุนจากราคา'} ฿${fmt(Math.abs(profit))}${divThb>0?` · ปันผลรับแล้ว ฿${fmt(divThb)}`:''} · ค่าธรรมเนียมสะสม $${fmt2(totalFee)}
+    💰 <strong>สรุปสำหรับการถอน:</strong> เงินต้น ฿${fmt(netCost)} (≈ $${fmt2(totalUsd)}) · ${profit>=0?'กำไรจากราคา':'ขาดทุนจากราคา'} ฿${fmt(Math.abs(profit))}${divThb>0?` · ปันผลรับแล้ว ฿${fmt(divThb)}`:''}${intThb>0?` · ดอกเบี้ยรับแล้ว ฿${fmt(intThb)} (${intYield.toFixed(2)}%)`:''} · ค่าธรรมเนียมสะสม $${fmt2(totalFee)}
   </div>`:''}
 
   <div class="dca-add">
     <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#a5b4fc">➕ เพิ่มรายการ</div>
     <div class="fgrid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">
-      <select class="fi" id="txn-type" onchange="calcDca()"><option value="buy">🟢 ซื้อ (Buy)</option><option value="sell">🔴 ขาย (Sell)</option><option value="dividend">💰 เงินปันผล</option></select>
+      <select class="fi" id="txn-type" onchange="calcDca()"><option value="buy">🟢 ซื้อ (Buy)</option><option value="sell">🔴 ขาย (Sell)</option><option value="dividend">💰 เงินปันผล</option><option value="interest">💵 ดอกเบี้ยรับ</option></select>
       <input class="fi" id="txn-date" type="date">
       <input class="fi" id="txn-thb" type="number" placeholder="จำนวนเงิน (฿)" oninput="calcDca()">
       <input class="fi" id="txn-usd" type="number" placeholder="USD ที่ได้" step="any" oninput="calcDca()">
@@ -665,8 +677,9 @@ async function renderDca(assetId){
   <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px">📋 ประวัติทั้งหมด (${txns.length} รายการ)</div>
   ${txns.length?txns.map(t=>{
     const ppu=t.units>0&&t.amount_usd>0?(t.amount_usd/t.units):0;
-    const isDiv=t.type==='dividend';
-    const label=isDiv?'ปันผล':(t.type==='buy'?'ซื้อ':'ขาย');
+    const isInt=t.type==='interest';
+    const isDiv=t.type==='dividend'||isInt;
+    const label=isInt?'ดอกเบี้ย':(t.type==='dividend'?'ปันผล':(t.type==='buy'?'ซื้อ':'ขาย'));
     const cls=isDiv?'txn-div':(t.type==='buy'?'txn-buy':'txn-sell');
     return `<div class="txn-row" style="flex-wrap:wrap${isDiv?';background:rgba(234,179,8,.04)':''}">
     <span class="txn-type ${cls}">${label}</span>
@@ -685,21 +698,32 @@ async function renderDca(assetId){
 }
 
 function calcDca(){
+  const a=assets.find(x=>x.id===dcaAssetId);
   const type=document.getElementById('txn-type').value;
   const thb=Number(document.getElementById('txn-thb').value)||0;
   const usd=Number(document.getElementById('txn-usd').value)||0;
   const units=Number(document.getElementById('txn-units').value)||0;
   const fee=Number(document.getElementById('txn-fee').value)||0;
   const el=document.getElementById('txn-calc');
-  const isDiv=(type==='dividend');
+  const isInt=(type==='interest');
+  const isDiv=(type==='dividend'||isInt);
 
   // ปรับ placeholder ตามประเภทรายการ
-  document.getElementById('txn-units').placeholder=isDiv?'หุ้นที่ได้ (ถ้า DRIP)':'จำนวนหุ้น';
-  document.getElementById('txn-thb').placeholder=isDiv?'ปันผลรับ (฿)':'จำนวนเงิน (฿)';
+  document.getElementById('txn-units').placeholder=isDiv?'หุ้นที่ได้ (ถ้ามี)':'จำนวนหุ้น';
+  document.getElementById('txn-thb').placeholder=isInt?'ดอกเบี้ยรับ (฿)':(isDiv?'ปันผลรับ (฿)':'จำนวนเงิน (฿)');
 
   if(thb<=0&&usd<=0){el.style.display='none';return;}
   el.style.display='block';
   let lines=[];
+
+  if(isInt){
+    const principal=(a&&a.cost)?a.cost:0;
+    lines.push(`💵 <strong>ดอกเบี้ยรับ:</strong> <span style="color:var(--gold)">฿${fmt(thb)}</span>`);
+    if(principal>0)lines.push(`📊 <strong>คิดเป็น:</strong> <span style="color:var(--accent)">${(thb/principal*100).toFixed(2)}%</span> <span style="color:var(--text3)">ของเงินต้น ฿${fmt(principal)}</span>`);
+    lines.push(`<span style="color:var(--text3)">รายได้จากดอกเบี้ย — ไม่กระทบเงินต้น</span>`);
+    el.innerHTML=lines.join('<br>');
+    return;
+  }
 
   if(isDiv){
     lines.push(`💰 <strong>เงินปันผล:</strong> <span style="color:var(--gold)">฿${fmt(thb)}</span>${usd>0?` <span style="color:var(--text3)">($${fmt2(usd)})</span>`:''}`);
@@ -736,8 +760,8 @@ async function addTxn(){
   const fee=document.getElementById('txn-fee').value||'0';
   const note=document.getElementById('txn-note').value;
 
-  if(type==='dividend'){
-    if(!thb){alert('กรุณากรอกจำนวนเงินปันผล');return;}
+  if(type==='dividend'||type==='interest'){
+    if(!thb){alert(type==='interest'?'กรุณากรอกจำนวนดอกเบี้ย':'กรุณากรอกจำนวนเงินปันผล');return;}
   }else{
     if(!thb||!units){alert('กรุณากรอกจำนวนเงินบาทและจำนวนหุ้น');return;}
   }
@@ -781,11 +805,14 @@ function rPstat(){
 }
 
 function rSummary(){
-  const tc=assets.reduce((s,a)=>s+a.cost,0),tv=assets.reduce((s,a)=>s+cv(a),0),g=tv-tc,p=tc?(g/tc)*100:0;
+  const tc=assets.reduce((s,a)=>s+a.cost,0);
+  const tv=assets.reduce((s,a)=>s+cv(a),0);
+  const ti=assets.reduce((s,a)=>s+inc(a),0);
+  const g=(tv-tc)+ti, p=tc?(g/tc)*100:0;
   const staleCount=assets.filter(isStale).length;
   document.getElementById('scards').innerHTML=[
     {l:'มูลค่ารวม',v:'฿'+fmt(tv),s:'ต้นทุน ฿'+fmt(tc),c:'var(--accent)'},
-    {l:'กำไร/ขาดทุน',v:'฿'+fB(g),s:fP(p),c:g>=0?'var(--green)':'var(--red)'},
+    {l:'กำไร/ขาดทุน',v:'฿'+fB(g),s:fP(p)+(ti>0?' · รวมดอกเบี้ย ฿'+fmt(ti):''),c:g>=0?'var(--green)':'var(--red)'},
     {l:'สินทรัพย์',v:assets.length+' รายการ',s:'Live: '+Object.keys(LP).length+(staleCount?' · ⚠️ '+staleCount+' ต้องอัปเดต':''),c:'var(--cyan)'},
   ].map(x=>`<div class="card"><div class="bar" style="background:${x.c}"></div><div class="lb">${x.l}</div><div class="vl" style="color:${x.c}">${x.v}</div><div class="sb">${x.s}</div></div>`).join('');
 }
@@ -801,12 +828,12 @@ function rAlloc(){
 function rCatGrid(){
   const cd={};
   assets.forEach(a=>{
-    if(!cd[a.cat])cd[a.cat]={cost:0,cur:0,tickers:new Set()};
-    cd[a.cat].cost+=a.cost;cd[a.cat].cur+=cv(a);
+    if(!cd[a.cat])cd[a.cat]={cost:0,cur:0,inc:0,tickers:new Set()};
+    cd[a.cat].cost+=a.cost;cd[a.cat].cur+=cv(a);cd[a.cat].inc+=inc(a);
     if(a.ticker)cd[a.cat].tickers.add(a.ticker);
   });
   document.getElementById('cgrid').innerHTML=Object.entries(cd).sort((a,b)=>b[1].cur-a[1].cur).map(([k,v])=>{
-    const g=v.cur-v.cost,p=v.cost?(g/v.cost)*100:0;
+    const g=(v.cur-v.cost)+v.inc,p=v.cost?(g/v.cost)*100:0;
     const rf=v.tickers.size?`<button class="cat-rf" id="crf-${k}" onclick="refreshCat('${k}',event)" title="รีเฟรชราคาหมวดนี้">🔄</button>`:'';
     return `<div class="cc${AF===k?' on':''}" style="--hi:${CATS[k]?.c}" onclick="tF('${k}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -845,7 +872,12 @@ function rControls(){
 function rList(){
   let list=AF==='all'?[...assets]:assets.filter(a=>a.cat===AF);
   list=list.map(a=>({...a,_v:cv(a),_l:isLive(a),_s:isStale(a)}));
-  list.forEach(a=>{a._g=a._v-a.cost;a._p=a.cost?(a._g/a.cost)*100:0;});
+  list.forEach(a=>{
+    a._inc=inc(a);
+    a._pg=a._v-a.cost;              // กำไรจากราคา
+    a._g=a._pg+a._inc;              // กำไรรวม (รวมดอกเบี้ย/ปันผล)
+    a._p=a.cost?(a._g/a.cost)*100:0;
+  });
 
   const canDrag=(SB==='custom');
   list.sort((a,b)=>{
@@ -881,7 +913,7 @@ function rList(){
       <div class="ai" style="background:${c.c}22">${c.i}</div>
       <div class="ainfo"><div class="aname">${a.name} ${badge}${staleBadge}${noPrice}</div><div class="ameta">${c.l} · ${dOnly(a.date)}${unitTxt}${a.lastUpdated&&!a.ticker?' · อัปเดต: '+dOnly(a.lastUpdated):''}</div></div>
       <div class="apb"><div class="acur">฿${fmt(a._v)}</div><div class="acost">ต้นทุน ฿${fmt(a.cost)}</div>${li?`<div class="alive">🟢 ${li.source}${ch24}</div><div style="font-size:10px;color:var(--gold);margin-top:1px">${unitInfo(a)}</div>`:''}</div>
-      <div class="agr"><div class="agb" style="color:${a._g>=0?'var(--green)':'var(--red)'}">${fB(a._g)} ฿</div><div class="agp" style="color:${a._g>=0?'var(--green)':'var(--red)'};background:${a._g>=0?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)'}">${fP(a._p)}</div></div>
+      <div class="agr"><div class="agb" style="color:${a._g>=0?'var(--green)':'var(--red)'}">${fB(a._g)} ฿</div><div class="agp" style="color:${a._g>=0?'var(--green)':'var(--red)'};background:${a._g>=0?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)'}">${fP(a._p)}</div>${a._inc>0?`<div style="font-size:10px;color:var(--gold);margin-top:2px">💵 ดอกเบี้ย ฿${fmt(a._inc)}</div>`:''}</div>
       <div class="aact">
         ${a.ticker?`<button id="rf-${a.id}" class="rf-btn" onclick="refreshOne('${a.id}',event)" title="รีเฟรชราคา">🔄</button>`:''}
         <button class="dca-btn" onclick="openDcaModal('${a.id}')" title="บันทึก DCA / ดูประวัติ">📒</button>
