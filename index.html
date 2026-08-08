@@ -301,7 +301,9 @@ const CATS={
 let user='',role='',assets=[],LP={},AF='all',SB=(localStorage.getItem('richman_sort')||'custom'),PT=null;
 let _sr=[],sTO=null,sType='all',sCtx=null,sTgt=null,dcaAssetId=null,updAssetId=null;
 
-const fmt=n=>n.toLocaleString('th-TH',{maximumFractionDigits:0});const fmt2=n=>n.toLocaleString('th-TH',{maximumFractionDigits:2});
+const _num=n=>{const v=Number(n);return isFinite(v)?v:0;};
+const fmt =n=>_num(n).toLocaleString('th-TH',{maximumFractionDigits:0});
+const fmt2=n=>_num(n).toLocaleString('th-TH',{maximumFractionDigits:2});
 // ตัดส่วนเวลา/GMT ออก เหลือแค่ YYYY-MM-DD
 function dOnly(v){
   if(!v)return '';
@@ -314,8 +316,8 @@ function dOnly(v){
   }
   return s.split(' GMT')[0].trim();
 }
-const fP=n=>(n>=0?'+':'')+n.toFixed(2)+'%';
-const fB=n=>(n>=0?'+':'')+fmt(n);
+const fP=n=>{const v=_num(n);return (v>=0?'+':'')+v.toFixed(2)+'%';};
+const fB=n=>{const v=_num(n);return (v>=0?'+':'')+fmt(v);};
 
 // JSONP — bypasses CORS entirely (Apps Script friendly)
 let _jsonpId=0;
@@ -427,6 +429,7 @@ function showLoadError(msg,detail){
       <div style="color:var(--red);font-weight:600;margin-bottom:6px">${msg}</div>
       ${detail?`<div style="font-size:11px;color:var(--text3);max-width:460px;margin:0 auto 14px;word-break:break-word">${detail}</div>`:''}
       <button class="abtn" onclick="loadAssets(true)" style="margin-right:6px">🔄 ลองใหม่</button>
+      <button class="ubtn" onclick="clearCacheReload()" style="margin-right:6px">🧹 ล้างข้อมูลชั่วคราว</button>
       <button class="ubtn" onclick="doLogout()">ออกจากระบบ</button>
     </div>`;
 }
@@ -436,7 +439,9 @@ function safeRender(){
   try{ render(); return true; }
   catch(e){
     console.error('Render error:',e);
-    showLoadError('แสดงผลไม่สำเร็จ',e.message+' — ลองกดล้างข้อมูลชั่วคราวแล้วโหลดใหม่');
+    showLoadError('แสดงผลไม่สำเร็จ','<b>'+(e.message||e)+'</b><br><br>'
+      +(e.stack?String(e.stack).split('\n').slice(0,3).join('<br>'):'')
+      +'<br><br>กด F12 → Console เพื่อดูรายละเอียดเพิ่มเติม');
     return false;
   }
 }
@@ -533,6 +538,10 @@ function cv(a){
   return a.cost;
 }
 function isLive(a){return !!(a.ticker&&LP[a.ticker]&&(LP[a.ticker].price_thb>0));}
+// รายได้สะสม (ดอกเบี้ย / ปันผลที่รับมาแล้ว)
+function inc(a){return a?(Number(a.income)||0):0;}
+// กำไรรวม = กำไรจากราคา + รายได้สะสม
+function gain(a){return a?((cv(a)-(Number(a.cost)||0))+inc(a)):0;}
 function isStale(a){
   if(!a||a.ticker)return false;
   if(!a.lastUpdated)return true;
@@ -849,7 +858,19 @@ async function submitYearlyUpdate(){
 }
 
 // === RENDER ===
-function render(){rSummary();rAlloc();rCatGrid();rControls();rList();rPstat();}
+function render(){
+  const parts=[['สรุป',rSummary],['สัดส่วน',rAlloc],['หมวดหมู่',rCatGrid],
+               ['ตัวควบคุม',rControls],['รายการ',rList],['สถานะราคา',rPstat]];
+  const failed=[];
+  parts.forEach(([name,fn])=>{
+    try{ fn(); }
+    catch(e){ console.error('render '+name+':',e); failed.push(name+': '+e.message); }
+  });
+  if(failed.length){
+    const st=document.getElementById('pstat');
+    if(st)st.innerHTML='<span style="color:var(--orange)">⚠️ บางส่วนแสดงไม่ได้ — '+failed.join(' | ')+'</span>';
+  }
+}
 function rPstat(){
   const e=document.getElementById('pstat');
   if(PT){
